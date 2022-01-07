@@ -1,13 +1,14 @@
 from flask import request
 from flask import Flask
 from cpu_monitor import cpu_load, cpu_core_info, cpu_frequencies
+from memory_monitor import memory_info
 
 app = Flask(__name__)
 
 
 @app.route("/")
 def welcome():
-    return
+    return "<p>Welcome</p>"
 
 
 @app.route('/api')
@@ -38,47 +39,40 @@ def cpu_cores():
     }
 
 
-# T - terabytes
-# G - gigabytes
-# M - megabytes
-# K - kilobytes
-# B - bytes
-
-# as a parameter use units, default = G
-
-
 @app.route('/monitor/mem/used')
-def memory_status():
-    return {
-        "used": 2.44,
-        "units": "Gb",
-    }
-
-
-@app.route('/monitor/mem/used?unit=K')
-def memory_used():
-    return {
-        "used": 2440000,
-        "units": "Kb",
-    }
-
-
-# // same here
+def memory_all_info():
+    unit = request.args.get('unit')
+    if unit is None:
+        return memory_info()
+    if unit == 'K':
+        return memory_info(Kb=True)
+    if unit == 'G':
+        return memory_info(Gb=True)
+    if unit == 'M':
+        return memory_info(Mb=True)
+    if unit == 'T':
+        return memory_info(Tb=True)
 
 
 @app.route('/monitor/mem/total')
-def memory():
+def memory_total():
+    unit = request.args.get('unit')
+    memory_dict = memory_info()
+    if unit is None:
+        memory_dict = memory_info()
+        unit = 'B'
+    if unit == 'Tb':
+        memory_dict = memory_info(Tb=True)
+    if unit == 'Gb':
+        memory_dict = memory_info(Gb=True)
+    if unit == 'Mb':
+        memory_dict = memory_info(Mb=True)
+    if unit == 'Kb':
+        memory_dict = memory_info(Kb=True)
     return {
-        "mem": 16,
-        "units": "Gb",
+        "mem": memory_dict['total'],
+        "units": unit,
     }
-
-
-# /monitor/mem/total?unit=K
-# {
-#     "mem": 16000000
-#     "units": "Kb",
-# }
 
 
 @app.route('/monitor/storage/info')
