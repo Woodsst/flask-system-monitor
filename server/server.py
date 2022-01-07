@@ -1,7 +1,9 @@
-from flask import request
 from flask import Flask
+from flask import request
+
 from cpu_monitor import cpu_load, cpu_core_info, cpu_frequencies
 from memory_monitor import memory_info
+from storage_monitor import storage_info
 
 app = Flask(__name__)
 
@@ -39,53 +41,83 @@ def cpu_cores():
     }
 
 
-@app.route('/monitor/mem/used')
+@app.route('/monitor/memory/info')
 def memory_all_info():
-    unit = request.args.get('unit')
-    if unit is None:
+    units = request.args.get('units')
+    if units is None:
         return memory_info()
-    if unit == 'K':
+    if units == 'K':
         return memory_info(Kb=True)
-    if unit == 'G':
+    if units == 'G':
         return memory_info(Gb=True)
-    if unit == 'M':
+    if units == 'M':
         return memory_info(Mb=True)
-    if unit == 'T':
+    if units == 'T':
         return memory_info(Tb=True)
 
 
-@app.route('/monitor/mem/total')
+@app.route('/monitor/memory/total')
 def memory_total():
-    unit = request.args.get('unit')
-    memory_dict = memory_info()
-    if unit is None:
-        memory_dict = memory_info()
-        unit = 'B'
-    if unit == 'Tb':
-        memory_dict = memory_info(Tb=True)
-    if unit == 'Gb':
-        memory_dict = memory_info(Gb=True)
-    if unit == 'Mb':
-        memory_dict = memory_info(Mb=True)
-    if unit == 'Kb':
-        memory_dict = memory_info(Kb=True)
+    units = request.args.get('units')
+    storage_dict = memory_info()
+    if units is None:
+        storage_dict = memory_info()
+        units = 'B'
+    if units == 'T':
+        storage_dict = memory_info(Tb=True)
+    if units == 'G':
+        storage_dict = memory_info(Gb=True)
+    if units == 'M':
+        storage_dict = memory_info(Mb=True)
+    if units == 'K':
+        storage_dict = memory_info(Kb=True)
     return {
-        "mem": memory_dict['total'],
-        "units": unit,
+        "mem": storage_dict['total'],
+        "units": units,
     }
 
 
 @app.route('/monitor/storage/info')
-def memory_size():
+def storage_all_info():
+    units = request.args.get('units')
+    storage_dict = storage_info()
+    if units is None:
+        storage_dict = storage_info()
+        units = 'B'
+    if units == 'T':
+        storage_dict = storage_info(Tb=True)
+    if units == 'G':
+        storage_dict = storage_info(Gb=True)
+    if units == 'M':
+        storage_dict = storage_info(Mb=True)
+    if units == 'K':
+        storage_dict = storage_info(Kb=True)
     return {
-        "awailable": 320,
-        "total": 2000,
-        "units": "Gb",
+        "total": storage_dict['total'],
+        'used': storage_dict['used'],
+        'percent': storage_dict['percent'],
+        'free': storage_dict['free'],
+        "units": units,
     }
 
-# /monitor/storage/info?units=B
-# {
-#     "awailable": 320000000000
-#     "total": 2000000000000
-#     "units": "b",
-# }
+
+@app.route('/monitor/storage/total')
+def storage_total():
+    units = request.args.get('units')
+    storage_dict = storage_info()
+    if units is None:
+        storage_dict = storage_info()
+        units = 'B'
+    if units == 'T':
+        storage_dict = storage_info(Tb=True)
+    if units == 'G':
+        storage_dict = storage_info(Gb=True)
+    if units == 'M':
+        storage_dict = storage_info(Mb=True)
+    if units == 'K':
+        storage_dict = storage_info(Kb=True)
+    return{
+        'total': storage_dict['total'],
+        'used': storage_dict['used'],
+        'units': units,
+    }

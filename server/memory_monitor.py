@@ -19,11 +19,11 @@ def memory_info(Kb = False, Mb = False, Gb = False, Tb = False) -> dict:
     for memory in memory_dict:
         if memory != 'percent':
             if Kb is True:
-                memory_dict[memory] = memory_dict[memory] / 1024
+                memory_dict[memory] = memory_dict[memory] // 1024
             if Mb is True:
-                memory_dict[memory] = memory_dict[memory] / (1024 ** 2)
+                memory_dict[memory] = memory_dict[memory] // (1024 ** 2)
             if Gb is True:
-                memory_dict[memory] = memory_dict[memory] / (1024 ** 3)
+                memory_dict[memory] = memory_dict[memory] // (1024 ** 3)
             if Tb is True:
                 memory_dict[memory] = memory_dict[memory] / (1024 ** 4)
     return memory_dict
