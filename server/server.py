@@ -43,34 +43,14 @@ def cpu_cores():
 
 @app.route('/monitor/memory/info')
 def memory_all_info():
-    units = request.args.get('units')
-    if units is None:
-        return memory_info()
-    if units == 'K':
-        return memory_info(Kb=True)
-    if units == 'G':
-        return memory_info(Gb=True)
-    if units == 'M':
-        return memory_info(Mb=True)
-    if units == 'T':
-        return memory_info(Tb=True)
+    units = request.args.get('units', 'G')
+    return memory_info(units)
 
 
 @app.route('/monitor/memory/total')
 def memory_total():
-    units = request.args.get('units')
-    storage_dict = memory_info()
-    if units is None:
-        storage_dict = memory_info()
-        units = 'B'
-    if units == 'T':
-        storage_dict = memory_info(Tb=True)
-    if units == 'G':
-        storage_dict = memory_info(Gb=True)
-    if units == 'M':
-        storage_dict = memory_info(Mb=True)
-    if units == 'K':
-        storage_dict = memory_info(Kb=True)
+    units = request.args.get('units', 'G')
+    storage_dict = memory_info(units)
     return {
         "mem": storage_dict['total'],
         "units": units,
@@ -79,19 +59,8 @@ def memory_total():
 
 @app.route('/monitor/storage/info')
 def storage_all_info():
-    units = request.args.get('units')
-    storage_dict = storage_info()
-    if units is None:
-        storage_dict = storage_info()
-        units = 'B'
-    if units == 'T':
-        storage_dict = storage_info(Tb=True)
-    if units == 'G':
-        storage_dict = storage_info(Gb=True)
-    if units == 'M':
-        storage_dict = storage_info(Mb=True)
-    if units == 'K':
-        storage_dict = storage_info(Kb=True)
+    units = request.args.get('units', 'G')
+    storage_dict = storage_info(units)
     return {
         "total": storage_dict['total'],
         'used': storage_dict['used'],
@@ -103,19 +72,8 @@ def storage_all_info():
 
 @app.route('/monitor/storage/total')
 def storage_total():
-    units = request.args.get('units')
-    storage_dict = storage_info()
-    if units is None:
-        storage_dict = storage_info()
-        units = 'B'
-    if units == 'T':
-        storage_dict = storage_info(Tb=True)
-    if units == 'G':
-        storage_dict = storage_info(Gb=True)
-    if units == 'M':
-        storage_dict = storage_info(Mb=True)
-    if units == 'K':
-        storage_dict = storage_info(Kb=True)
+    units = request.args.get('units', 'G')
+    storage_dict = storage_info(units)
     return{
         'total': storage_dict['total'],
         'used': storage_dict['used'],

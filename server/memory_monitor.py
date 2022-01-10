@@ -1,7 +1,7 @@
 import psutil
 
 
-def memory_info(Kb = False, Mb = False, Gb = False, Tb = False) -> dict:
+def memory_info(arg: str) -> dict:
     mem = psutil.virtual_memory()
     memory_dict = {
         'total': mem[0],
@@ -18,12 +18,12 @@ def memory_info(Kb = False, Mb = False, Gb = False, Tb = False) -> dict:
     }
     for memory in memory_dict:
         if memory != 'percent':
-            if Kb is True:
+            if arg == 'K':
                 memory_dict[memory] = memory_dict[memory] // 1024
-            if Mb is True:
+            if arg == 'M':
                 memory_dict[memory] = memory_dict[memory] // (1024 ** 2)
-            if Gb is True:
+            if arg == 'G':
                 memory_dict[memory] = memory_dict[memory] // (1024 ** 3)
-            if Tb is True:
+            if arg == 'T':
                 memory_dict[memory] = memory_dict[memory] / (1024 ** 4)
     return memory_dict

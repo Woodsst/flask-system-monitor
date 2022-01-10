@@ -1,7 +1,7 @@
 import psutil
 
 
-def storage_info(Kb = False, Mb = False, Gb = False, Tb = False) -> dict:
+def storage_info(arg: str) -> dict:
     storage = psutil.disk_usage('/')
     storage_dict = {
         'total': storage[0],
@@ -11,12 +11,12 @@ def storage_info(Kb = False, Mb = False, Gb = False, Tb = False) -> dict:
     }
     for memory in storage_dict:
         if memory != 'percent':
-            if Kb is True:
+            if arg == 'K':
                 storage_dict[memory] = storage_dict[memory] // 1024
-            if Mb is True:
+            if arg == 'M':
                 storage_dict[memory] = storage_dict[memory] // (1024 ** 2)
-            if Gb is True:
+            if arg == 'G':
                 storage_dict[memory] = storage_dict[memory] // (1024 ** 3)
-            if Tb is True:
+            if arg == 'T':
                 storage_dict[memory] = storage_dict[memory] / (1024 ** 4)
     return storage_dict
