@@ -2,6 +2,7 @@ from flask import Flask
 from flask import request
 
 from cpu_monitor import cpu_load, cpu_core_info, cpu_frequencies
+from datatype import DataType
 from memory_monitor import memory_info
 from storage_monitor import storage_info
 
@@ -14,7 +15,7 @@ def welcome():
 
 
 @app.route('/api')
-def api_info():
+def api_info() -> dict:
     return {
         'name': 'system monitor',
         'version': '0.0.1',
@@ -22,7 +23,7 @@ def api_info():
 
 
 @app.route('/monitor/cpu/load')
-def processor_load():
+def processor_load() -> dict:
     interval = request.args.get('interval', 0)
     return {
         'load': cpu_load(float(interval)),
@@ -30,7 +31,7 @@ def processor_load():
 
 
 @app.route('/monitor/cpu/info')
-def cpu_cores():
+def cpu_cores() -> dict:
     physical = cpu_core_info(logical=False)
     logical = cpu_core_info(logical=True)
     frequency = cpu_frequencies()
@@ -42,14 +43,14 @@ def cpu_cores():
 
 
 @app.route('/monitor/memory/info')
-def memory_all_info():
-    units = request.args.get('units', 'G')
+def memory_all_info() -> dict:
+    units = request.args.get('units', DataType.Gigabyte.value)
     return memory_info(units)
 
 
 @app.route('/monitor/memory/total')
-def memory_total():
-    units = request.args.get('units', 'G')
+def memory_total() -> dict:
+    units = request.args.get('units', DataType.Gigabyte.value)
     storage_dict = memory_info(units)
     return {
         "mem": storage_dict['total'],
@@ -58,8 +59,8 @@ def memory_total():
 
 
 @app.route('/monitor/storage/info')
-def storage_all_info():
-    units = request.args.get('units', 'G')
+def storage_all_info() -> dict:
+    units = request.args.get('units', DataType.Gigabyte.value)
     storage_dict = storage_info(units)
     return {
         "total": storage_dict['total'],
@@ -71,8 +72,8 @@ def storage_all_info():
 
 
 @app.route('/monitor/storage/total')
-def storage_total():
-    units = request.args.get('units', 'G')
+def storage_total() -> dict:
+    units = request.args.get('units', DataType.Gigabyte.value)
     storage_dict = storage_info(units)
     return{
         'total': storage_dict['total'],

@@ -1,4 +1,5 @@
 import psutil
+from datatype import DataType
 
 
 def memory_info(arg: str) -> dict:
@@ -18,12 +19,12 @@ def memory_info(arg: str) -> dict:
     }
     for memory in memory_dict:
         if memory != 'percent':
-            if arg == 'K':
+            if arg == DataType.Kilobyte.value:
                 memory_dict[memory] = memory_dict[memory] // 1024
-            if arg == 'M':
+            if arg == DataType.Megabyte.value:
                 memory_dict[memory] = memory_dict[memory] // (1024 ** 2)
-            if arg == 'G':
+            if arg == DataType.Gigabyte.value:
                 memory_dict[memory] = memory_dict[memory] // (1024 ** 3)
-            if arg == 'T':
+            if arg == DataType.Terabyte.value:
                 memory_dict[memory] = memory_dict[memory] / (1024 ** 4)
     return memory_dict
