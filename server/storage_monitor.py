@@ -1,8 +1,8 @@
 import psutil
-from datatype import DataType
+from datatype import DataType, scaled_unit
 
 
-def storage_info(arg: str) -> dict:
+def storage_info(unit: DataType) -> dict:
     storage = psutil.disk_usage('/')
     storage_dict = {
         'total': storage[0],
@@ -12,12 +12,5 @@ def storage_info(arg: str) -> dict:
     }
     for memory in storage_dict:
         if memory != 'percent':
-            if arg == DataType.Kilobyte.value:
-                storage_dict[memory] = storage_dict[memory] // 1024
-            if arg == DataType.Megabyte.value:
-                storage_dict[memory] = storage_dict[memory] // (1024 ** 2)
-            if arg == DataType.Gigabyte.value:
-                storage_dict[memory] = storage_dict[memory] // (1024 ** 3)
-            if arg == DataType.Terabyte.value:
-                storage_dict[memory] = storage_dict[memory] / (1024 ** 4)
+            storage_dict[memory] = scaled_unit(unit, storage_dict[memory])
     return storage_dict

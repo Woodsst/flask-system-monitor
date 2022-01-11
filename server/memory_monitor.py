@@ -1,8 +1,8 @@
 import psutil
-from datatype import DataType
+from datatype import DataType, scaled_unit
 
 
-def memory_info(arg: str) -> dict:
+def memory_info(unit: DataType) -> dict:
     mem = psutil.virtual_memory()
     memory_dict = {
         'total': mem[0],
@@ -19,12 +19,5 @@ def memory_info(arg: str) -> dict:
     }
     for memory in memory_dict:
         if memory != 'percent':
-            if arg == DataType.Kilobyte.value:
-                memory_dict[memory] = memory_dict[memory] // 1024
-            if arg == DataType.Megabyte.value:
-                memory_dict[memory] = memory_dict[memory] // (1024 ** 2)
-            if arg == DataType.Gigabyte.value:
-                memory_dict[memory] = memory_dict[memory] // (1024 ** 3)
-            if arg == DataType.Terabyte.value:
-                memory_dict[memory] = memory_dict[memory] / (1024 ** 4)
+            memory_dict[memory] = scaled_unit(unit, memory_dict[memory])
     return memory_dict

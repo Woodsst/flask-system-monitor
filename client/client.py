@@ -32,8 +32,8 @@ class BaseHttpApi:
 base_api = BaseHttpApi('localhost', 5000)
 
 response = base_api.get("/api")
-response1 = base_api.get("/monitor/cpu/info")
-print(response.status_code)
+response1 = base_api.get("/monitor/storage/total?units=MB")
+# print(response.status_code)
 print(response1.status_code)
-print(response.json())
+# print(response.json())
 print(response1.json())

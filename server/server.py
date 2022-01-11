@@ -1,5 +1,4 @@
-from flask import Flask
-from flask import request
+from flask import Flask, make_response, request, Response
 
 from cpu_monitor import cpu_load, cpu_core_info, cpu_frequencies
 from datatype import DataType
@@ -43,40 +42,54 @@ def cpu_cores() -> dict:
 
 
 @app.route('/monitor/memory/info')
-def memory_all_info() -> dict:
-    units = request.args.get('units', DataType.Gigabyte.value)
+def memory_all_info() -> Response or dict:
+    raw_units = request.args.get('units', "GB")
+    try:
+        units = DataType(raw_units)
+        print(units)
+    except ValueError:
+        return make_response("Bad units provided", 400)
     return memory_info(units)
 
 
 @app.route('/monitor/memory/total')
-def memory_total() -> dict:
-    units = request.args.get('units', DataType.Gigabyte.value)
-    storage_dict = memory_info(units)
+def memory_total() -> Response or dict:
+    raw_units = request.args.get('units', "GB")
+    try:
+        units = DataType(raw_units)
+    except ValueError:
+        return make_response("Bad units provided", 400)
     return {
-        "mem": storage_dict['total'],
-        "units": units,
+        'total': memory_info(units)['total'],
+        'units': units.value,
     }
 
 
 @app.route('/monitor/storage/info')
-def storage_all_info() -> dict:
-    units = request.args.get('units', DataType.Gigabyte.value)
-    storage_dict = storage_info(units)
+def storage_all_info() -> Response or dict:
+    raw_units = request.args.get('units', 'GB')
+    try:
+        units = DataType(raw_units)
+    except ValueError:
+        return make_response("Bad units provided", 400)
     return {
-        "total": storage_dict['total'],
-        'used': storage_dict['used'],
-        'percent': storage_dict['percent'],
-        'free': storage_dict['free'],
-        "units": units,
+        "total": storage_info(units)['total'],
+        'used': storage_info(units)['used'],
+        'percent': storage_info(units)['percent'],
+        'free': storage_info(units)['free'],
+        "units": units.value,
     }
 
 
 @app.route('/monitor/storage/total')
-def storage_total() -> dict:
-    units = request.args.get('units', DataType.Gigabyte.value)
-    storage_dict = storage_info(units)
+def storage_total() -> Response or dict:
+    raw_units = request.args.get('units', 'GB')
+    try:
+        units = DataType(raw_units)
+    except ValueError:
+        return make_response("Bad units provided", 400)
     return{
-        'total': storage_dict['total'],
-        'used': storage_dict['used'],
-        'units': units,
+        'total': storage_info(units)['total'],
+        'used': storage_info(units)['used'],
+        'units': units.value,
     }
