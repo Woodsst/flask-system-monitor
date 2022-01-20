@@ -10,11 +10,12 @@ from message_handler import RequestHandler
 import json
 import logging
 import protocol
+import logger_config
 
 app = Flask(__name__)
 sockets = Sockets(app)
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__file__)
 
 
 @app.route("/")
@@ -24,23 +25,28 @@ def welcome():
 
 @sockets.route('/echo', websocket=True)
 def echo_socket(ws):
+    logger.info('Web socket run')
     while not ws.closed:
         message = ws.receive()
-        logger.info(message)
+        logger.info(f'included in web socket - {message}')
         try:
             json.loads(message)
         except json.decoder.JSONDecodeError:
             ws.send(protocol.Error.ERROR_DATA_TYPE_MESSAGE)
+            logger.info(f'{message}, Data type incorrect')
             continue
+
         client_request = protocol.MessageBase.deserialize(message)
         if client_request.type == protocol.MessageType.HELLO:
             ws.send(str(protocol.Welcome()))
 
         elif client_request.type == protocol.MessageType.UNSUBSCRIBE:
             ws.send(str(protocol.Unsubscribed(client_request.request_id)))
+            logger.info(f'client unsubscribed {client_request.request_id}')
 
         elif client_request.type == protocol.MessageType.SUBSCRIBE:
             ws.send(str(protocol.Subscribed(client_request.request_id)))
+            logger.info(f'client subscribe {client_request.request_id}')
             ws.send(RequestHandler.handler(client_request))
 
 

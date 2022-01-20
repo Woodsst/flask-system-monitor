@@ -98,7 +98,7 @@ class Event(MessageBase):
 class Error(MessageBase):
     type: MessageType = MessageType.ERROR
 
-    ERROR_DATA_TYPE_MESSAGE = 'Data type incorrect, please use json or str data'
+    ERROR_DATA_TYPE_MESSAGE = 'Data type incorrect, please use json'
     ERROR_JSON = {
         "type": "ERROR", "reason": "incorrect data"
     }
