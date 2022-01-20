@@ -4,13 +4,35 @@ from cpu_monitor import cpu_load, cpu_core_info, cpu_frequencies
 from datatype import DataType
 from memory_monitor import memory_info
 from storage_monitor import storage_info
+from flask_sockets import Sockets, Rule
+from message_handler import RequestHandler
+
+import json
+import logging
 
 app = Flask(__name__)
+sockets = Sockets(app)
+
+logger = logging.getLogger(__name__)
 
 
 @app.route("/")
 def welcome():
     return "<p>Welcome</p>"
+
+
+@sockets.route('/echo', websocket=True)
+def echo_socket(ws):
+    while not ws.closed:
+        message = ws.receive()
+        logger.info(message)
+        try:
+            json.loads(message)
+        except json.decoder.JSONDecodeError:
+            ws.send('{"type": "ERROR", "reason": "Unknown message"}')
+            continue
+        message = RequestHandler.handler(message)
+        ws.send(message)
 
 
 @app.route('/api')
@@ -93,3 +115,11 @@ def storage_total() -> Response or dict:
         'used': storage_info(units)['used'],
         'units': units.value,
     }
+
+
+if __name__ == "__main__":
+    from gevent import pywsgi
+    from geventwebsocket.handler import WebSocketHandler
+    server = pywsgi.WSGIServer(('', 5000), app, handler_class=WebSocketHandler)
+    sockets.url_map.add(Rule("/echo", endpoint=echo_socket, websocket=True))
+    server.serve_forever()
