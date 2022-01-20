@@ -9,6 +9,7 @@ from message_handler import RequestHandler
 
 import json
 import logging
+import protocol
 
 app = Flask(__name__)
 sockets = Sockets(app)
@@ -29,10 +30,18 @@ def echo_socket(ws):
         try:
             json.loads(message)
         except json.decoder.JSONDecodeError:
-            ws.send('{"type": "ERROR", "reason": "Unknown message"}')
+            ws.send(protocol.Error.ERROR_DATA_TYPE_MESSAGE)
             continue
-        message = RequestHandler.handler(message)
-        ws.send(message)
+        client_request = protocol.MessageBase.deserialize(message)
+        if client_request.type == protocol.MessageType.HELLO:
+            ws.send(str(protocol.Welcome()))
+
+        elif client_request.type == protocol.MessageType.UNSUBSCRIBE:
+            ws.send(str(protocol.Unsubscribed(client_request.request_id)))
+
+        elif client_request.type == protocol.MessageType.SUBSCRIBE:
+            ws.send(str(protocol.Subscribed(client_request.request_id)))
+            ws.send(RequestHandler.handler(client_request))
 
 
 @app.route('/api')

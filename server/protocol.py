@@ -1,7 +1,6 @@
 import enum
 import json
-
-request_id = 0
+import random
 
 
 class MessageType(enum.Enum):
@@ -25,8 +24,11 @@ class MessageBase:
         message_type = MessageType(raw_message_type)
         message_cls = message_cls_map.get(message_type)
         message_data = message.get('data')
-        if len(message_data) != 0:
-            return message_cls(message_data)
+        request_id = message.get('request_id')
+        if message_data is not None and len(message_data) != 0:
+            return message_cls(message_data, request_id)
+        if request_id is not None:
+            return message_cls(request_id=request_id)
         return message_cls
 
     def __str__(self):
@@ -57,39 +59,36 @@ class Welcome(MessageBase):
 class Subscribe(MessageBase):
     type: MessageType = MessageType.SUBSCRIBE
 
-    def __init__(self, data: list):
+    def __init__(self, data: list, request_id):
         self.data = data
-        self.request = request_id
+        self.request_id = request_id
 
 
 class Subscribed(MessageBase):
     type: MessageType = MessageType.SUBSCRIBED
 
-    def __init__(self):
-        global request_id
+    def __init__(self, request_id):
         self.request_id = request_id
 
 
 class Unsubscribe(MessageBase):
     type: MessageType = MessageType.UNSUBSCRIBE
 
-    def __init__(self):
-        global request_id
+    def __init__(self, request_id):
         self.request_id = request_id
-        request_id += 1
 
 
 class Unsubscribed(MessageBase):
     type: MessageType = MessageType.UNSUBSCRIBED
 
-    def __init__(self):
+    def __init__(self, request_id):
         self.request_id = request_id
 
 
 class Event(MessageBase):
     type: MessageType = MessageType.EVENT
 
-    def __init__(self, cpu, mem, storage):
+    def __init__(self, cpu, mem, storage, request_id):
         self.request = request_id
         self.cpu = cpu
         self.mem = mem
@@ -99,8 +98,10 @@ class Event(MessageBase):
 class Error(MessageBase):
     type: MessageType = MessageType.ERROR
 
-    def __init__(self, msg: str):
-        self.msg = msg
+    ERROR_DATA_TYPE_MESSAGE = 'Data type incorrect, please use json or str data'
+    ERROR_JSON = {
+        "type": "ERROR", "reason": "incorrect data"
+    }
 
 
 message_cls_map = {
