@@ -49,6 +49,7 @@ class WebSocketMessageHandler:
         self.websocket = web_socket
         self.client_status = ClientStatus.NOT_AUTHORIZED
         self.event_thread = None
+        self.interval = 1
 
     def receive(self) -> typing.Optional[protocol.MessageType]:
         message = self.websocket.receive()
@@ -82,6 +83,7 @@ class WebSocketMessageHandler:
                     self.client_status = ClientStatus.AUTHORIZED
                     self.websocket.send(json.dumps(protocol.Error.ERROR_REQUEST_ID_COLLISION))
                 else:
+                    self.interval = int(request.interval)
                     request_id_numbers.add(request.request_id)
                     self.client_status = ClientStatus.SUBSCRIBED
                     self.websocket.send(str(protocol.Subscribed(request.request_id)))
@@ -94,4 +96,4 @@ class WebSocketMessageHandler:
     def event(self, request):
         while self.client_status == ClientStatus.SUBSCRIBED and request.request_id in request_id_numbers:
             self.websocket.send(RequestHandler.handler(request))
-            time.sleep(1)
+            time.sleep(self.interval)

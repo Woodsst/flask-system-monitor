@@ -22,9 +22,10 @@ class MessageBase:
         message_cls = message_cls_map.get(message_type)
         message_data = data.get('data')
         request_id = data.get('request_id')
+        interval = data.get('interval')
         if message_data is not None and len(message_data) != 0:
-            return message_cls(message_data, request_id)
-        if request_id is not None:
+            return message_cls(message_data, request_id, interval)
+        elif request_id is not None:
             return message_cls(request_id=request_id)
         return message_cls
 
@@ -56,9 +57,10 @@ class Welcome(MessageBase):
 class Subscribe(MessageBase):
     type: MessageType = MessageType.SUBSCRIBE
 
-    def __init__(self, data: list, request_id):
+    def __init__(self, data: list, request_id, interval):
         self.data = data
         self.request_id = request_id
+        self.interval = interval
 
 
 class Subscribed(MessageBase):
