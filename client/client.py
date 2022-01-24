@@ -1,5 +1,5 @@
-from requests import Response
 import requests
+from requests import Response
 
 
 class BaseHttpApi:

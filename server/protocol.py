@@ -1,6 +1,4 @@
 import enum
-import json
-import random
 
 
 class MessageType(enum.Enum):
@@ -19,12 +17,11 @@ class MessageBase:
 
     @classmethod
     def deserialize(cls, data):
-        message = json.loads(data)
-        raw_message_type = message.get('type')
+        raw_message_type = data.get('type')
         message_type = MessageType(raw_message_type)
         message_cls = message_cls_map.get(message_type)
-        message_data = message.get('data')
-        request_id = message.get('request_id')
+        message_data = data.get('data')
+        request_id = data.get('request_id')
         if message_data is not None and len(message_data) != 0:
             return message_cls(message_data, request_id)
         if request_id is not None:
@@ -88,7 +85,7 @@ class Unsubscribed(MessageBase):
 class Event(MessageBase):
     type: MessageType = MessageType.EVENT
 
-    def __init__(self, cpu, mem, storage, request_id):
+    def __init__(self, cpu=None, mem=None, storage=None, request_id=None):
         self.request = request_id
         self.cpu = cpu
         self.mem = mem

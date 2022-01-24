@@ -1,4 +1,5 @@
 import psutil
+
 from datatype import DataType, scaled_unit
 
 
