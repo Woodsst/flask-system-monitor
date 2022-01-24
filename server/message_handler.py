@@ -21,6 +21,9 @@ class ClientStatus(enum.Enum):
     UNSUBSCRIBED = 'UNSUBSCRIBED'
 
 
+request_id_numbers = set()
+
+
 class RequestHandler:
 
     @staticmethod
@@ -53,7 +56,7 @@ class WebSocketMessageHandler:
         try:
             json_data = json.loads(message)
         except json.decoder.JSONDecodeError:
-            self.websocket.send(protocol.Error.ERROR_DATA_TYPE_MESSAGE)
+            self.websocket.send(json.dumps(protocol.Error.ERROR_DATA_TYPE))
             logger.info(f'{message}, Data type incorrect')
             return
 
@@ -68,20 +71,27 @@ class WebSocketMessageHandler:
         if self.client_status != ClientStatus.NOT_AUTHORIZED:
 
             if request.type == protocol.MessageType.UNSUBSCRIBE:
-                self.client_status = ClientStatus.UNSUBSCRIBED
-                self.websocket.send(str(protocol.Unsubscribed(request.request_id)))
-                logger.info(f'client unsubscribed {request.request_id}')
+                request_id_numbers.discard(request.request_id)
+                if len(request_id_numbers) == 0:
+                    self.client_status = ClientStatus.UNSUBSCRIBED
+                    self.websocket.send(str(protocol.Unsubscribed(request.request_id)))
+                    logger.info(f'client unsubscribed {request.request_id}')
 
-            elif request.type == protocol.MessageType.SUBSCRIBE:
-                self.client_status = ClientStatus.SUBSCRIBED
-                self.websocket.send(str(protocol.Subscribed(request.request_id)))
-                logger.info(f'client subscribe {request.request_id}')
-                self.event_thread = threading.Thread(target=self.event, args=(request,))
-                self.event_thread.start()
+            elif request.type == protocol.MessageType.SUBSCRIBE and request.request_id not in request_id_numbers:
+                if request.request_id in request_id_numbers:
+                    self.client_status = ClientStatus.AUTHORIZED
+                    self.websocket.send(json.dumps(protocol.Error.ERROR_REQUEST_ID_COLLISION))
+                else:
+                    request_id_numbers.add(request.request_id)
+                    self.client_status = ClientStatus.SUBSCRIBED
+                    self.websocket.send(str(protocol.Subscribed(request.request_id)))
+                    logger.info(f'client subscribe {request.request_id}')
+                    self.event_thread = threading.Thread(target=self.event, args=(request,))
+                    self.event_thread.start()
         else:
-            self.websocket.send('{"type": "ERROR", "reason": "not authorized"}')
+            self.websocket.send(json.dumps(protocol.Error.ERROR_DATA_TYPE))
 
     def event(self, request):
-        while self.client_status == ClientStatus.SUBSCRIBED:
+        while self.client_status == ClientStatus.SUBSCRIBED and request.request_id in request_id_numbers:
             self.websocket.send(RequestHandler.handler(request))
             time.sleep(1)
