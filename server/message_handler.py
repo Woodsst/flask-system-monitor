@@ -73,6 +73,7 @@ class WebSocketMessageHandler:
 
             if request.type == protocol.MessageType.UNSUBSCRIBE:
                 request_id_numbers.discard(request.request_id)
+                self.websocket.send(str(protocol.Unsubscribed(request.request_id)))
                 if len(request_id_numbers) == 0:
                     self.client_status = ClientStatus.UNSUBSCRIBED
                     self.websocket.send(str(protocol.Unsubscribed(request.request_id)))
