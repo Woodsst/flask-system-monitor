@@ -1,16 +1,6 @@
-import json
-
 import requests
 import websocket
 from requests import Response
-
-hello = json.dumps({"type": "HELLO"})
-subscribe_cpu = json.dumps({"type": "SUBSCRIBE", "request_id": "1", "data": ["CPU"], "interval": "1"}, indent=4)
-subscribe_mem = json.dumps({"type": "SUBSCRIBE", "request_id": "2", "data": ["MEM"], "interval": "1"}, indent=4)
-subscribe_storage = json.dumps({"type": "SUBSCRIBE", "request_id": "3", "data": ["STORAGE"], "interval": "1"}, indent=4)
-unsubscribe_cpu = json.dumps({"type": "UNSUBSCRIBE", "request_id": "1"}, indent=4)
-unsubscribe_mem = json.dumps({"type": "UNSUBSCRIBE", "request_id": "2"}, indent=4)
-unsubscribe_storage = json.dumps({"type": "UNSUBSCRIBE", "request_id": "3"}, indent=4)
 
 
 class BaseHttpApi:
@@ -52,31 +42,8 @@ class WebSocketTestClient:
     def get(self, data: str):
         self.ws.send(data)
 
-    def print_recv(self):
-        print(self.ws.recv())
+    def recv(self):
+        return self.ws.recv()
 
     def close(self):
         self.ws.close()
-
-
-def test_subscribe_unsubscribe(data: str):
-    data_dict = json.loads(data)
-    timer = 0
-    ws = WebSocketTestClient('localhost', 5000, '/echo')
-    ws.get(hello)
-    ws.get(data)
-    while timer < 4:
-        ws.print_recv()
-        timer += 1
-    if data_dict.get('request_id') == '1':
-        ws.get(unsubscribe_cpu)
-    elif data_dict.get('request_id') == '2':
-        ws.get(unsubscribe_mem)
-    elif data_dict.get('request_id') == '3':
-        ws.get(unsubscribe_storage)
-    ws.print_recv()
-
-
-test_subscribe_unsubscribe(subscribe_cpu)
-test_subscribe_unsubscribe(subscribe_mem)
-test_subscribe_unsubscribe(subscribe_storage)
