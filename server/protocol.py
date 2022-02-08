@@ -1,4 +1,5 @@
 import enum
+import json
 
 
 class MessageType(enum.Enum):
@@ -37,7 +38,7 @@ class MessageBase:
             'type': self.type.value,
             'payload': self.__dict__
         }
-        return json_data
+        return json.dumps(json_data)
 
 
 class Hello(MessageBase):
