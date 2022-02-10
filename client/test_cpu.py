@@ -1,9 +1,7 @@
 import pytest
-from client import BaseHttpApi
 
 
-def test_cpu_load_200():
-    api_client = BaseHttpApi('localhost', 5000)
+def test_cpu_load_200(api_client):
     response = api_client.get('/monitor/cpu/load')
     assert response.status_code == 200, f'{response.status_code}'
     response_json = response.json()
@@ -14,14 +12,12 @@ def test_cpu_load_200():
     assert len(response_json) == 1
 
 
-def test_cpu_load_405():
-    api_client = BaseHttpApi('localhost', 5000)
+def test_cpu_load_405(api_client):
     response = api_client.post('/monitor/cpu/load')
     assert response.status_code == 405, f'{response.status_code}'
 
 
-def test_cpu_core_info_200():
-    api_client = BaseHttpApi('localhost', 5000)
+def test_cpu_core_info_200(api_client):
     response = api_client.get('/monitor/cpu/info')
     assert response.status_code == 200, f'{response.status_code}'
     response_json = response.json()
@@ -34,7 +30,6 @@ def test_cpu_core_info_200():
     assert isinstance(response_json['physical cores count'], int)
 
 
-def test_cpu_core_info_405():
-    api_client = BaseHttpApi('localhost', 5000)
+def test_cpu_core_info_405(api_client):
     response = api_client.post('/monitor/cpu/info')
     assert response.status_code == 405, f'{response.status_code}'
