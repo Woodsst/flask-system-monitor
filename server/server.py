@@ -24,7 +24,6 @@ def welcome():
 @sockets.route('/echo', websocket=True)
 def echo_socket(ws):
     handler = WebSocketMessageHandler(ws)
-    logger.info('Web socket run')
     while not ws.closed:
         client_request = handler.receive()
         if client_request is None:
@@ -115,6 +114,7 @@ def storage_total() -> Response or dict:
 
 
 if __name__ == "__main__":
+    logger.info(f'server start')
     from gevent import pywsgi
     from geventwebsocket.handler import WebSocketHandler
     server = pywsgi.WSGIServer(('', 5000), app, handler_class=WebSocketHandler)

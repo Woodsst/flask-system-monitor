@@ -11,6 +11,7 @@ class MessageType(enum.Enum):
     UNSUBSCRIBED = 'UNSUBSCRIBED'
     EVENT = 'EVENT'
     ERROR = 'ERROR'
+    WORK_TIME = 'WORK_TIME'
 
 
 class MessageBase:
@@ -85,6 +86,14 @@ class Unsubscribed(MessageBase):
         self.request_id = request_id
 
 
+class WorkTime(MessageBase):
+    type: MessageType = MessageType.WORK_TIME
+
+    def __init__(self, start_time, actual_time):
+        self.start_work = start_time
+        self.actual_time = actual_time
+
+
 class Event(MessageBase):
     type: MessageType = MessageType.EVENT
 
@@ -115,5 +124,6 @@ message_cls_map = {
     MessageType.UNSUBSCRIBED: Unsubscribed,
     MessageType.EVENT: Event,
     MessageType.ERROR: Error,
+    MessageType.WORK_TIME: WorkTime,
 
 }

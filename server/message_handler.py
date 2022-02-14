@@ -49,7 +49,9 @@ class WebSocketMessageHandler:
         self.websocket = web_socket
         self.client_status = ClientStatus.NOT_AUTHORIZED
         self.event_thread = None
+        self.writhe_data_thread = None
         self.interval = 1
+        self.start_time = time.strftime('%a, %d %b %Y %H:%M:%S')
 
     def receive(self) -> typing.Optional[protocol.MessageType]:
         message = self.websocket.receive()
@@ -69,11 +71,9 @@ class WebSocketMessageHandler:
             self.client_status = ClientStatus.AUTHORIZED
             self.websocket.send(str(protocol.Welcome()))
 
-        if self.client_status != ClientStatus.NOT_AUTHORIZED:
-
+        elif self.client_status != ClientStatus.NOT_AUTHORIZED:
             if request.type == protocol.MessageType.UNSUBSCRIBE:
                 request_id_numbers.discard(request.request_id)
-                self.websocket.send(str(protocol.Unsubscribed(request.request_id)))
                 if len(request_id_numbers) == 0:
                     self.client_status = ClientStatus.UNSUBSCRIBED
                     self.websocket.send(str(protocol.Unsubscribed(request.request_id)))
@@ -91,6 +91,10 @@ class WebSocketMessageHandler:
                     logger.info(f'client subscribe {request.request_id}')
                     self.event_thread = threading.Thread(target=self.event, args=(request,))
                     self.event_thread.start()
+                    self.writhe_data_thread = threading.Thread(target=self.writhe_response_data, args=(request,))
+                    self.writhe_data_thread.start()
+            elif request.type == protocol.MessageType.WORK_TIME:
+                self.websocket.send(str(protocol.WorkTime(self.start_time, time.strftime('%d %b %Y %H:%M:%S'))))
         else:
             self.websocket.send(json.dumps(protocol.Error.ERROR_DATA_TYPE))
 
@@ -98,3 +102,14 @@ class WebSocketMessageHandler:
         while self.client_status == ClientStatus.SUBSCRIBED and request.request_id in request_id_numbers:
             self.websocket.send(RequestHandler.handler(request))
             time.sleep(self.interval)
+
+    def writhe_response_data(self, request):
+        if request.data == ["CPU"]:
+            csv_data = open('CPU_load.csv', 'w')
+            csv_data.write('Request Id;Time;CPU load\n')
+            csv_data.write(f'{request.request_id};{time.strftime("%d %b %H:%M:%S")};tracking start\n')
+            while self.client_status == ClientStatus.SUBSCRIBED and request.request_id in request_id_numbers:
+                CPU_load = json.loads(RequestHandler.handler(request))
+                csv_data.write(f'{request.request_id};{time.strftime("%H:%M:%S")};{CPU_load["payload"]["cpu"]}\n')
+                time.sleep(self.interval)
+            csv_data.write(f'{request.request_id};{time.strftime("%d %b %H:%M:%S")};tracking end\n')
