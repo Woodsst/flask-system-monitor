@@ -1,4 +1,7 @@
 import logging
+import threading
+import time
+
 import logger_config
 
 from flask import Flask, make_response, request, Response
@@ -9,6 +12,7 @@ from datatype import DataType
 from memory_monitor import memory_info
 from message_handler import WebSocketMessageHandler
 from storage_monitor import storage_info
+from monitoring import service_time, write_cpu_load
 
 app = Flask(__name__)
 sockets = Sockets(app)
@@ -113,8 +117,16 @@ def storage_total() -> Response or dict:
     }
 
 
+@app.route('/start_time')
+def start_time() -> Response or dict:
+    return service_time(server_start)
+
+
 if __name__ == "__main__":
     logger.info(f'server start')
+    server_start = time.strftime('%a, %d %b %Y %H:%M:%S')
+    thread_cpu_info = threading.Thread(target=write_cpu_load, daemon=True)
+    thread_cpu_info.start()
     from gevent import pywsgi
     from geventwebsocket.handler import WebSocketHandler
     server = pywsgi.WSGIServer(('', 5000), app, handler_class=WebSocketHandler)
