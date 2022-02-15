@@ -91,7 +91,7 @@ class WebSocketMessageHandler:
                     logger.info(f'client subscribe {request.request_id}')
                     self.event_thread = threading.Thread(target=self.event, args=(request,))
                     self.event_thread.start()
-                    self.writhe_data_thread = threading.Thread(target=self.writhe_response_data, args=(request,))
+                    self.writhe_data_thread = threading.Thread(target=self.write_response_data, args=(request,), daemon=True)
                     self.writhe_data_thread.start()
             elif request.type == protocol.MessageType.WORK_TIME:
                 self.websocket.send(str(protocol.WorkTime(self.start_time, time.strftime('%d %b %Y %H:%M:%S'))))
@@ -103,13 +103,16 @@ class WebSocketMessageHandler:
             self.websocket.send(RequestHandler.handler(request))
             time.sleep(self.interval)
 
-    def writhe_response_data(self, request):
-        if request.data == ["CPU"]:
-            csv_data = open('CPU_load.csv', 'w')
-            csv_data.write('Request Id;Time;CPU load\n')
-            csv_data.write(f'{request.request_id};{time.strftime("%d %b %H:%M:%S")};tracking start\n')
-            while self.client_status == ClientStatus.SUBSCRIBED and request.request_id in request_id_numbers:
-                CPU_load = json.loads(RequestHandler.handler(request))
-                csv_data.write(f'{request.request_id};{time.strftime("%H:%M:%S")};{CPU_load["payload"]["cpu"]}\n')
-                time.sleep(self.interval)
-            csv_data.write(f'{request.request_id};{time.strftime("%d %b %H:%M:%S")};tracking end\n')
+    def write_response_data(self, request):
+        data_name = request.data[0].lower()
+
+        csv_data = open(f'{data_name}_load.csv', 'w')
+        csv_data.write(f'Request Id;Time;{data_name}\n')
+        csv_data.write(f'{request.request_id};{time.strftime("%d %b %H:%M:%S")};tracking start\n')
+
+        while self.client_status == ClientStatus.SUBSCRIBED and request.request_id in request_id_numbers:
+            Data_load = json.loads(RequestHandler.handler(request))
+            csv_data.write(f'{request.request_id};{time.strftime("%H:%M:%S")};{Data_load["payload"][data_name]}\n')
+            time.sleep(self.interval)
+
+        csv_data.write(f'{request.request_id};{time.strftime("%d %b %H:%M:%S")};tracking end\n')

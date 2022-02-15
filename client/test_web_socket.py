@@ -9,11 +9,15 @@ welcome = '{"type": "WELCOME", "payload": {"welcome": "WELCOME"}}'
 subscribe_cpu = json.dumps({"type": "SUBSCRIBE", "request_id": "1", "data": ["CPU"], "interval": "1"}, indent=4)
 subscribe_cpu_interval_0 = json.dumps({"type": "SUBSCRIBE", "request_id": "1", "data": ["CPU"], "interval": "0"}, indent=4)
 subscribe_mem = json.dumps({"type": "SUBSCRIBE", "request_id": "2", "data": ["MEM"], "interval": "1"}, indent=4)
+subscribe_mem_interval_0 = json.dumps({"type": "SUBSCRIBE", "request_id": "2", "data": ["MEM"], "interval": "0.3"}, indent=4)
 subscribe_storage = json.dumps({"type": "SUBSCRIBE", "request_id": "3", "data": ["STORAGE"], "interval": "1"}, indent=4)
+subscribe_storage_interval_0 = json.dumps({"type": "SUBSCRIBE", "request_id": "3", "data": ["STORAGE"], "interval": "0.3"}, indent=4)
 unsubscribe_cpu = json.dumps({"type": "UNSUBSCRIBE", "request_id": "1"}, indent=4)
 unsubscribe_mem = json.dumps({"type": "UNSUBSCRIBE", "request_id": "2"}, indent=4)
 unsubscribe_storage = json.dumps({"type": "UNSUBSCRIBE", "request_id": "3"}, indent=4)
+unsubscribe_cpu_mem_storage = json.dumps({"type": "UNSUBSCRIBE", "request_id": "123"}, indent=4)
 work_time = json.dumps({"type": "WORK_TIME"})
+subscribe_cpu_mem_storage = json.dumps({"type": "SUBSCRIBE", "request_id": "123", "data": ["CPU", "MEM", "STORAGE"], "interval": "1"}, indent=4)
 
 
 def test_hello(ws_api):
@@ -63,6 +67,25 @@ def test_subscribe_unsubscribe_storage(ws_api):
     assert ws_api.recv() == '{"type": "UNSUBSCRIBED", "payload": {"request_id": "3"}}'
 
 
+def test_subscribe_unsubscribe_cpu_mem_storage(ws_api):
+    ws_api.get(hello)
+    ws_api.get(subscribe_cpu_mem_storage)
+    assert ws_api.recv() == welcome
+    assert ws_api.recv() == '{"type": "SUBSCRIBED", "payload": {"request_id": "123"}}'
+    response_js = json.loads(ws_api.recv())
+    assert response_js['type'] == 'EVENT'
+    assert len(response_js['payload']) == 4
+    assert isinstance(response_js['payload']['cpu'], float)
+    assert isinstance(response_js['payload']['storage'], dict)
+    assert isinstance(response_js['payload']['mem'], dict)
+    for value in response_js['payload']['mem'].values():
+        isinstance(value, (int, float))
+    for value in response_js['payload']['storage'].values():
+        isinstance(value, (int, float))
+    ws_api.get(unsubscribe_cpu_mem_storage)
+    assert ws_api.recv() == '{"type": "UNSUBSCRIBED", "payload": {"request_id": "123"}}'
+
+
 def test_work_time(ws_api):
     ws_api.get(hello)
     ws_api.get(work_time)
@@ -74,18 +97,53 @@ def test_work_time(ws_api):
     assert isinstance(response_js['payload']['actual_time'], str)
 
 
-def test_writhe_response_data(ws_api):
+def test_write_response_data_cpu(ws_api):
     ws_api.get(hello)
     ws_api.get(subscribe_cpu_interval_0)
     assert ws_api.recv() == welcome
-    time.sleep(1)
+    time.sleep(0.9)
     path = os.getcwd()
     path = path.removesuffix('client')
     path += 'server'
-    csv_data = open(f'{path}/CPU_load.csv', 'r')
+    csv_data = open(f'{path}/cpu_load.csv', 'r')
     file_string = csv_data.readlines()
-    assert file_string[0] == 'Request Id;Time;CPU load\n'
+    assert file_string[0] == 'Request Id;Time;cpu\n'
     assert file_string[1].split(';')[-1] == 'tracking start\n'
     assert file_string[-1].split(';')[-1] == 'tracking end\n'
     ws_api.get(unsubscribe_cpu)
-    os.remove(path=f'{path}/CPU_load.csv')
+    os.remove(path=f'{path}/cpu_load.csv')
+
+
+def test_write_response_data_mem(ws_api):
+    ws_api.get(hello)
+    ws_api.get(subscribe_mem_interval_0)
+    assert ws_api.recv() == welcome
+    time.sleep(0.5)
+    path = os.getcwd()
+    path = path.removesuffix('client')
+    path += 'server'
+    csv_data = open(f'{path}/mem_load.csv', 'r')
+    file_string = csv_data.readlines()
+    assert file_string[0] == 'Request Id;Time;mem\n'
+    assert file_string[1].split(';')[-1] == 'tracking start\n'
+    assert file_string[-1].split(';')[-1] == 'tracking end\n'
+    ws_api.get(unsubscribe_mem)
+    os.remove(path=f'{path}/mem_load.csv')
+
+
+def test_write_response_data_storage(ws_api):
+    ws_api.get(hello)
+    ws_api.get(subscribe_storage_interval_0)
+    assert ws_api.recv() == welcome
+    time.sleep(0.5)
+    path = os.getcwd()
+    path = path.removesuffix('client')
+    path += 'server'
+    csv_data = open(f'{path}/storage_load.csv', 'r')
+    file_string = csv_data.readlines()
+    assert file_string[0] == 'Request Id;Time;storage\n'
+    assert file_string[1].split(';')[-1] == 'tracking start\n'
+    assert file_string[-1].split(';')[-1] == 'tracking end\n'
+    ws_api.get(unsubscribe_mem)
+    os.remove(path=f'{path}/storage_load.csv')
+
