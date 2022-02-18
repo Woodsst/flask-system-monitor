@@ -12,6 +12,8 @@ class MessageType(enum.Enum):
     EVENT = 'EVENT'
     ERROR = 'ERROR'
     WORK_TIME = 'WORK_TIME'
+    CLIENT_DATA = 'CLIENT_DATA'
+    DATA_RETURN = 'DATA_RETURN'
 
 
 class MessageBase:
@@ -25,7 +27,9 @@ class MessageBase:
         message_data = data.get('data')
         request_id = data.get('request_id')
         interval = data.get('interval')
-        if message_data is not None and len(message_data) != 0:
+        if message_data is not None and isinstance(message_data, (int, float, dict)):
+            return message_cls(message_data, interval)
+        elif message_data is not None and len(message_data) != 0:
             return message_cls(message_data, request_id, interval)
         elif request_id is not None:
             return message_cls(request_id=request_id)
@@ -104,6 +108,21 @@ class Event(MessageBase):
         self.storage = storage
 
 
+class ClientData(MessageBase):
+    type: MessageType = MessageType.CLIENT_DATA
+
+    def __init__(self, client_data, interval):
+        self.client_data = client_data
+        self.interval = interval
+
+
+class DataReturn(MessageBase):
+    type: MessageType = MessageType.DATA_RETURN
+
+    def __init__(self, data):
+        self.data = data
+
+
 class Error(MessageBase):
     type: MessageType = MessageType.ERROR
 
@@ -125,5 +144,7 @@ message_cls_map = {
     MessageType.EVENT: Event,
     MessageType.ERROR: Error,
     MessageType.WORK_TIME: WorkTime,
+    MessageType.CLIENT_DATA: ClientData,
+    MessageType.DATA_RETURN: DataReturn
 
 }

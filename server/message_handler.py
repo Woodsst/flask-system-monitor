@@ -66,35 +66,53 @@ class WebSocketMessageHandler:
         client_request = protocol.MessageBase.deserialize(json_data)
         return client_request
 
+    def message_hello(self):
+        self.client_status = ClientStatus.AUTHORIZED
+        self.websocket.send(str(protocol.Welcome()))
+
+    def message_unsubscribe(self, request):
+        request_id_numbers.discard(request.request_id)
+        if len(request_id_numbers) == 0:
+            self.client_status = ClientStatus.UNSUBSCRIBED
+            self.websocket.send(str(protocol.Unsubscribed(request.request_id)))
+            logger.info(f'client unsubscribed {request.request_id}')
+
+    def message_subscribe(self, request):
+        if request.request_id in request_id_numbers:
+            self.client_status = ClientStatus.AUTHORIZED
+            self.websocket.send(json.dumps(protocol.Error.ERROR_REQUEST_ID_COLLISION))
+        else:
+            self.interval = int(request.interval)
+            request_id_numbers.add(request.request_id)
+            self.client_status = ClientStatus.SUBSCRIBED
+            self.websocket.send(str(protocol.Subscribed(request.request_id)))
+            logger.info(f'client subscribe {request.request_id}')
+            self.event_thread = threading.Thread(target=self.event, args=(request,))
+            self.event_thread.start()
+            self.writhe_data_thread = threading.Thread(target=self.write_response_data, args=(request,), daemon=True)
+            self.writhe_data_thread.start()
+
+    def message_client_data(self, request):
+        self.websocket.send(str(protocol.DataReturn(data=request.client_data)))
+        time.sleep(int(request.interval))
+
     def handle(self, request):
         if request.type == protocol.MessageType.HELLO:
-            self.client_status = ClientStatus.AUTHORIZED
-            self.websocket.send(str(protocol.Welcome()))
+            self.message_hello()
 
         elif self.client_status != ClientStatus.NOT_AUTHORIZED:
-            if request.type == protocol.MessageType.UNSUBSCRIBE:
-                request_id_numbers.discard(request.request_id)
-                if len(request_id_numbers) == 0:
-                    self.client_status = ClientStatus.UNSUBSCRIBED
-                    self.websocket.send(str(protocol.Unsubscribed(request.request_id)))
-                    logger.info(f'client unsubscribed {request.request_id}')
+            if request.type == protocol.MessageType.CLIENT_DATA:
+                self.message_client_data(request)
+
+            elif request.type == protocol.MessageType.UNSUBSCRIBE:
+                self.message_unsubscribe(request)
 
             elif request.type == protocol.MessageType.SUBSCRIBE and request.request_id not in request_id_numbers:
-                if request.request_id in request_id_numbers:
-                    self.client_status = ClientStatus.AUTHORIZED
-                    self.websocket.send(json.dumps(protocol.Error.ERROR_REQUEST_ID_COLLISION))
-                else:
-                    self.interval = int(request.interval)
-                    request_id_numbers.add(request.request_id)
-                    self.client_status = ClientStatus.SUBSCRIBED
-                    self.websocket.send(str(protocol.Subscribed(request.request_id)))
-                    logger.info(f'client subscribe {request.request_id}')
-                    self.event_thread = threading.Thread(target=self.event, args=(request,))
-                    self.event_thread.start()
-                    self.writhe_data_thread = threading.Thread(target=self.write_response_data, args=(request,), daemon=True)
-                    self.writhe_data_thread.start()
+                self.message_subscribe(request)
+
             elif request.type == protocol.MessageType.WORK_TIME:
                 self.websocket.send(str(protocol.WorkTime(self.start_time, time.strftime('%d %b %Y %H:%M:%S'))))
+
         else:
             self.websocket.send(json.dumps(protocol.Error.ERROR_DATA_TYPE))
 

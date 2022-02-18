@@ -4,7 +4,7 @@ import time
 
 import logger_config
 
-from flask import Flask, make_response, request, Response
+from flask import Flask, make_response, request, Response, url_for, jsonify
 from flask_sockets import Sockets, Rule
 
 from cpu_monitor import cpu_load, cpu_core_info, cpu_frequencies
@@ -13,6 +13,7 @@ from memory_monitor import memory_info
 from message_handler import WebSocketMessageHandler
 from storage_monitor import storage_info
 from monitoring import service_time, write_cpu_load
+from authorization import authorization
 
 app = Flask(__name__)
 sockets = Sockets(app)
@@ -120,6 +121,30 @@ def storage_total() -> Response or dict:
 @app.route('/start_time')
 def start_time() -> Response or dict:
     return service_time(server_start)
+
+
+@app.route(f'/client/<client_id>', methods=['POST', 'GET'])
+def route_for_client(client_id: int) -> Response:
+    data = request.form['cpu_load']
+    with open(f'client_{client_id}_cpu_load.csv', 'a') as client_cpu:
+        client_cpu.write(f'{data}\n')
+        return jsonify(data), 202
+
+
+@app.route('/client', methods=['POST'])
+def client_registration() -> Response or dict:
+    autorize_client_id = authorization(request.form)
+    if isinstance(autorize_client_id, int):
+        url_for('route_for_client', client_id=autorize_client_id)
+        return {
+           'client_id': authorization(request.form),
+        }
+
+    else:
+        logger.info(f'{request.form}, incorrect login or pass')
+        return {
+            'Error': 'incorrect login or pass'
+        }
 
 
 if __name__ == "__main__":
