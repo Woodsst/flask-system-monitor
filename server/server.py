@@ -4,7 +4,7 @@ import time
 
 import logger_config
 
-from flask import Flask, make_response, request, Response, url_for, jsonify
+from flask import Flask, make_response, request, Response, jsonify
 from flask_sockets import Sockets, Rule
 
 from cpu_monitor import cpu_load, cpu_core_info, cpu_frequencies
@@ -13,7 +13,7 @@ from memory_monitor import memory_info
 from message_handler import WebSocketMessageHandler
 from storage_monitor import storage_info
 from monitoring import service_time, write_cpu_load
-from authorization import authorization
+from authorization import authorization, user_exist, add_client, hash_authorization
 
 app = Flask(__name__)
 sockets = Sockets(app)
@@ -123,27 +123,38 @@ def start_time() -> Response or dict:
     return service_time(server_start)
 
 
-@app.route(f'/client/<client_id>', methods=['POST', 'GET'])
+@app.route(f'/client/<client_id>', methods=['POST'])
 def route_for_client(client_id: int) -> Response:
-    data = request.form['cpu_load']
-    with open(f'client_{client_id}_cpu_load.csv', 'a') as client_cpu:
-        client_cpu.write(f'{data}\n')
-        return jsonify(data), 202
+    client_hash = request.headers.get('Authorization').removeprefix('Basic ')
+    if hash_authorization(client_id, client_hash):
+        data = request.form['cpu_load']
+        with open(f'client_{client_id}_cpu_load.csv', 'a') as client_cpu:
+            client_cpu.write(f'{data}\n')
+            return jsonify(data), 202
+    else:
+        return jsonify(''), 401
 
 
 @app.route('/client', methods=['POST'])
 def client_registration() -> Response or dict:
-    autorize_client_id = authorization(request.form)
-    if isinstance(autorize_client_id, int):
-        url_for('route_for_client', client_id=autorize_client_id)
-        return {
-           'client_id': authorization(request.form),
-        }
-
+    login = request.get_json()['login']
+    password = request.get_json()['pass']
+    if user_exist(login):
+        client_id = authorization(user=login, password=password)
+        if client_id:
+            return {
+               'client_id': client_id,
+            }
+        else:
+            logger.info(f'{request.get_json()}, incorrect login or pass')
+            return {
+                'Error': 'incorrect login or pass'
+            }
     else:
-        logger.info(f'{request.form}, incorrect login or pass')
+        client_id = add_client(login, password)
         return {
-            'Error': 'incorrect login or pass'
+            'registration': login,
+            'client_id': client_id
         }
 
 
