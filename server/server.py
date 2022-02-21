@@ -13,7 +13,7 @@ from memory_monitor import memory_info
 from message_handler import WebSocketMessageHandler
 from storage_monitor import storage_info
 from monitoring import service_time, write_cpu_load
-from authorization import authorization, user_exist, add_client, hash_authorization
+from authorization import authorization, user_exist, add_client, hash_authorization, clients
 
 app = Flask(__name__)
 sockets = Sockets(app)
@@ -126,9 +126,10 @@ def start_time() -> Response or dict:
 @app.route(f'/client/<client_id>', methods=['POST'])
 def route_for_client(client_id: int) -> Response:
     client_hash = request.headers.get('Authorization').removeprefix('Basic ')
+    username = list(clients[client_id].keys())[0]
     if hash_authorization(client_id, client_hash):
         data = request.form['cpu_load']
-        with open(f'client_{client_id}_cpu_load.csv', 'a') as client_cpu:
+        with open(f'client_{username}_cpu_load.csv', 'a') as client_cpu:
             client_cpu.write(f'{data}\n')
             return jsonify(data), 202
     else:
@@ -137,23 +138,27 @@ def route_for_client(client_id: int) -> Response:
 
 @app.route('/client', methods=['POST'])
 def client_registration() -> Response or dict:
-    login = request.get_json()['login']
+    username = request.get_json()['username']
     password = request.get_json()['pass']
-    if user_exist(login):
-        client_id = authorization(user=login, password=password)
+    if user_exist(username):
+        client_id = authorization(user=username, password=password)
         if client_id:
             return {
                'client_id': client_id,
             }
         else:
-            logger.info(f'{request.get_json()}, incorrect login or pass')
+            logger.info(f'{request.get_json()}, incorrect username or pass')
             return {
-                'Error': 'incorrect login or pass'
+                'Error': 'incorrect username or pass'
             }
     else:
-        client_id = add_client(login, password)
+        if username is None:
+            return {
+                'Error': 'incorrect username or pass'
+            }
+        client_id = add_client(username, password)
         return {
-            'registration': login,
+            'registration': username,
             'client_id': client_id
         }
 

@@ -14,6 +14,9 @@ class MessageType(enum.Enum):
     WORK_TIME = 'WORK_TIME'
     CLIENT_DATA = 'CLIENT_DATA'
     DATA_RETURN = 'DATA_RETURN'
+    REGISTRATION_CLIENT = 'REGISTRATION_CLIENT'
+    ADD_CLIENT = 'ADD_CLIENT'
+    EXIST_CLIENT = 'EXIST_CLIENT'
 
 
 class MessageBase:
@@ -27,8 +30,13 @@ class MessageBase:
         message_data = data.get('data')
         request_id = data.get('request_id')
         interval = data.get('interval')
-        if message_data is not None and isinstance(message_data, (int, float, dict)):
-            return message_cls(message_data, interval)
+        username = data.get('username')
+        password = data.get('password')
+        client_id = data.get('client_id')
+        if username is not None:
+            return message_cls(username=username, password=password)
+        elif message_data is not None and isinstance(message_data, (int, float, dict)):
+            return message_cls(message_data, interval, client_id)
         elif message_data is not None and len(message_data) != 0:
             return message_cls(message_data, request_id, interval)
         elif request_id is not None:
@@ -111,9 +119,10 @@ class Event(MessageBase):
 class ClientData(MessageBase):
     type: MessageType = MessageType.CLIENT_DATA
 
-    def __init__(self, client_data, interval):
+    def __init__(self, client_data, interval, client_id):
         self.client_data = client_data
         self.interval = interval
+        self.client_id = client_id
 
 
 class DataReturn(MessageBase):
@@ -121,6 +130,29 @@ class DataReturn(MessageBase):
 
     def __init__(self, data):
         self.data = data
+
+
+class RegistrationClient(MessageBase):
+    type: MessageType = MessageType.REGISTRATION_CLIENT
+
+    def __init__(self, username, password):
+        self.username = username
+        self.password = password
+
+
+class ExistClient(MessageBase):
+    type: MessageType = MessageType.EXIST_CLIENT
+
+    def __init__(self, client_id):
+        self.client_id = client_id
+
+
+class AddClient(MessageBase):
+    type: MessageType = MessageType.ADD_CLIENT
+
+    def __init__(self, username, client_id):
+        self.username = username
+        self.client_id = client_id
 
 
 class Error(MessageBase):
@@ -131,6 +163,9 @@ class Error(MessageBase):
     }
     ERROR_REQUEST_ID_COLLISION = {
         "type": "ERROR", "reason": "request id collision"
+    }
+    ERROR_USERNAME_PASSWORD_INCORRECT = {
+        "type": "ERROR", "reason": "incorrect username or password"
     }
 
 
@@ -145,6 +180,9 @@ message_cls_map = {
     MessageType.ERROR: Error,
     MessageType.WORK_TIME: WorkTime,
     MessageType.CLIENT_DATA: ClientData,
-    MessageType.DATA_RETURN: DataReturn
+    MessageType.DATA_RETURN: DataReturn,
+    MessageType.REGISTRATION_CLIENT: RegistrationClient,
+    MessageType.EXIST_CLIENT: ExistClient,
+    MessageType.ADD_CLIENT: AddClient
 
 }

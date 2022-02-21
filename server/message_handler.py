@@ -10,6 +10,7 @@ import memory_monitor
 import protocol
 import storage_monitor
 from datatype import DataType
+from authorization import *
 
 logger = logging.getLogger(__file__)
 
@@ -93,8 +94,28 @@ class WebSocketMessageHandler:
             self.writhe_data_thread.start()
 
     def message_client_data(self, request):
-        self.websocket.send(str(protocol.DataReturn(data=request.client_data)))
-        time.sleep(int(request.interval))
+        if request.client_id in clients:
+            username = clients.get(request.client_id).keys()
+            username = list(username)[0]
+            self.websocket.send(str(protocol.DataReturn(data=request.client_data)))
+            with open(f'client_{username}_cpu_load.csv', 'a') as file:
+                file.write(f'{request.client_data["cpu"]}\n')
+                time.sleep(int(request.interval))
+
+    def message_client_registration(self, request):
+        username = request.username
+        password = request.password
+        if user_exist(username):
+            client_id = authorization(username, password)
+            if client_id:
+                self.websocket.send(str(protocol.ExistClient(client_id)))
+            else:
+                self.websocket.send(str(protocol.Error.ERROR_USERNAME_PASSWORD_INCORRECT))
+        else:
+            if username is None:
+                self.websocket.send(str(protocol.Error.ERROR_USERNAME_PASSWORD_INCORRECT))
+            client_id = add_client(username, password)
+            self.websocket.send(str(protocol.AddClient(username, client_id)))
 
     def handle(self, request):
         if request.type == protocol.MessageType.HELLO:
@@ -103,6 +124,9 @@ class WebSocketMessageHandler:
         elif self.client_status != ClientStatus.NOT_AUTHORIZED:
             if request.type == protocol.MessageType.CLIENT_DATA:
                 self.message_client_data(request)
+
+            elif request.type == protocol.MessageType.REGISTRATION_CLIENT:
+                self.message_client_registration(request)
 
             elif request.type == protocol.MessageType.UNSUBSCRIBE:
                 self.message_unsubscribe(request)
