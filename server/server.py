@@ -12,7 +12,7 @@ from datatype import DataType
 from memory_monitor import memory_info
 from message_handler import WebSocketMessageHandler
 from storage_monitor import storage_info
-from monitoring import service_time, write_cpu_load
+from monitoring import service_time, write_server_system_load
 from authorization import authorization, user_exist, add_client, hash_authorization, clients
 
 app = Flask(__name__)
@@ -143,6 +143,7 @@ def client_registration() -> Response or dict:
     if user_exist(username):
         client_id = authorization(user=username, password=password)
         if client_id:
+            logger.info(f'client: {username}, authorization')
             return {
                'client_id': client_id,
             }
@@ -157,6 +158,7 @@ def client_registration() -> Response or dict:
                 'Error': 'incorrect username or pass'
             }
         client_id = add_client(username, password)
+        logger.info(f'client: {username}, registered')
         return {
             'registration': username,
             'client_id': client_id
@@ -166,7 +168,7 @@ def client_registration() -> Response or dict:
 if __name__ == "__main__":
     logger.info(f'server start')
     server_start = time.strftime('%a, %d %b %Y %H:%M:%S')
-    thread_cpu_info = threading.Thread(target=write_cpu_load, daemon=True)
+    thread_cpu_info = threading.Thread(target=write_server_system_load, daemon=True)
     thread_cpu_info.start()
     from gevent import pywsgi
     from geventwebsocket.handler import WebSocketHandler
