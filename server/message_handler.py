@@ -11,6 +11,7 @@ import protocol
 import storage_monitor
 from datatype import DataType
 from authorization import *
+from monitoring import write_client_data
 
 logger = logging.getLogger(__file__)
 
@@ -95,9 +96,14 @@ class WebSocketMessageHandler:
         if request.client_id in clients:
             username = clients.get(request.client_id).keys()
             username = list(username)[0]
+            data_name = list(request.client_data.keys())[0]
+            if data_name == 'cpu_load':
+                write_client_data(data=request.client_data["cpu_load"], username=username, data_name='cpu_load')
+            elif data_name == 'mem':
+                write_client_data(data=request.client_data["mem"], username=username, data_name='mem')
+            elif data_name == 'storage':
+                write_client_data(data=request.client_data["storage"], username=username, data_name='storage')
             self.websocket.send(str(protocol.DataReturn(data=request.client_data)))
-            with open(f'client_{username}_cpu_load.csv', 'a') as file:
-                file.write(f'{request.client_data["cpu"]}\n')
 
     def message_client_registration(self, request):
         username = request.username

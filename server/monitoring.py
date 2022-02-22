@@ -1,4 +1,5 @@
 import time
+import os
 
 from cpu_monitor import cpu_load
 from protocol import WorkTime
@@ -18,3 +19,13 @@ def write_server_system_load():
             csv.write(f'{time.strftime("%d %b %H:%M:%S")};{cpu_load(1)};{memory_info(DataType.Megabyte)["used"]};{storage_info(DataType.Megabyte)["used"]}\n')
             csv.flush()
 
+
+def write_client_data(data, username, data_name):
+    try:
+        parent_dir = os.getcwd()
+        path = os.path.join(parent_dir, username)
+        os.mkdir(path)
+    except FileExistsError:
+        pass
+    with open(f'{os.getcwd()}/{username}/{username}_{data_name}.csv', 'a') as file:
+        file.write(f'{data}\n')

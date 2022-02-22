@@ -3,7 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 .idea
-all_time_cpu_load.csv
+server_system_load.csv
 .pytest_cache
 
 

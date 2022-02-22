@@ -15,9 +15,7 @@ def authorization(user: str, password: str) -> (bool, int):
 def add_client(username: str, password: str) -> int:
     uniq_id = str(uuid.uuid4())
     clients.update({uniq_id: {username: password}})
-    with open(f'client_{username}_cpu_load.csv', 'w') as file:
-        file.write(f'{username} cpu\n')
-        return uniq_id
+    return uniq_id
 
 
 def user_exist(user_name: str) -> bool:

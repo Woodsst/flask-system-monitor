@@ -12,7 +12,7 @@ from datatype import DataType
 from memory_monitor import memory_info
 from message_handler import WebSocketMessageHandler
 from storage_monitor import storage_info
-from monitoring import service_time, write_server_system_load
+from monitoring import service_time, write_server_system_load, write_client_data
 from authorization import authorization, user_exist, add_client, hash_authorization, clients
 
 app = Flask(__name__)
@@ -128,10 +128,13 @@ def route_for_client(client_id: int) -> Response:
     client_hash = request.headers.get('Authorization').removeprefix('Basic ')
     username = list(clients[client_id].keys())[0]
     if hash_authorization(client_id, client_hash):
-        data = request.form['cpu_load']
-        with open(f'client_{username}_cpu_load.csv', 'a') as client_cpu:
-            client_cpu.write(f'{data}\n')
-            return jsonify(data), 202
+        if request.form.get('cpu_load'):
+            write_client_data(request.form.get('cpu_load'), username, 'cpu_load')
+        if request.form.get('mem'):
+            write_client_data(request.form.get('mem'), username, 'mem')
+        if request.form.get('storage'):
+            write_client_data(request.form.get('storage'), username, 'storage')
+        return jsonify(request.form), 202
     else:
         return jsonify(''), 401
 
