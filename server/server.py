@@ -128,14 +128,14 @@ def route_for_client(client_id: int) -> Response:
     client_hash = request.headers.get('Authorization').removeprefix('Basic ')
     username = list(clients[client_id].keys())[0]
     if hash_authorization(client_id, client_hash):
-        if request.form.get('cpu_load'):
-            write_client_data(request.form.get('cpu_load'), username, 'cpu_load')
-        if request.form.get('mem'):
-            write_client_data(request.form.get('mem'), username, 'mem')
-        if request.form.get('storage'):
-            write_client_data(request.form.get('storage'), username, 'storage')
-        return jsonify(request.form), 202
+        data = request.form
+        if len(data) > 0:
+            write_client_data(data, username)
+            return jsonify(request.form), 202
+        logger.info(f'client - {username} incorrect data size')
+        return jsonify(''), 401
     else:
+        logger.info(f'client - {username} incorrect hash')
         return jsonify(''), 401
 
 

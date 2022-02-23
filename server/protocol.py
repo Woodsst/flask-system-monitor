@@ -167,6 +167,9 @@ class Error(MessageBase):
     ERROR_USERNAME_PASSWORD_INCORRECT = {
         "type": "ERROR", "reason": "incorrect username or password"
     }
+    ERROR_DATA_SIZE = {
+        "type": "ERROR", "reason": "incorrect data size"
+    }
 
 
 message_cls_map = {

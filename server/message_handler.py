@@ -96,14 +96,12 @@ class WebSocketMessageHandler:
         if request.client_id in clients:
             username = clients.get(request.client_id).keys()
             username = list(username)[0]
-            data_name = list(request.client_data.keys())[0]
-            if data_name == 'cpu_load':
-                write_client_data(data=request.client_data["cpu_load"], username=username, data_name='cpu_load')
-            elif data_name == 'mem':
-                write_client_data(data=request.client_data["mem"], username=username, data_name='mem')
-            elif data_name == 'storage':
-                write_client_data(data=request.client_data["storage"], username=username, data_name='storage')
-            self.websocket.send(str(protocol.DataReturn(data=request.client_data)))
+            if len(request.client_data) > 0:
+                write_client_data(data=request.client_data, username=username)
+                self.websocket.send(str(protocol.DataReturn(data=request.client_data)))
+            else:
+                self.websocket.send(str(protocol.Error.ERROR_DATA_SIZE))
+                logger.info(f'client - {username} incorrect data size')
 
     def message_client_registration(self, request):
         username = request.username
