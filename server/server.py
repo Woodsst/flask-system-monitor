@@ -12,8 +12,8 @@ from datatype import DataType
 from memory_monitor import memory_info
 from message_handler import WebSocketMessageHandler
 from storage_monitor import storage_info
-from monitoring import service_time, write_server_system_load, write_client_data
-from authorization import authorization, user_exist, add_client, hash_authorization, clients
+from monitoring import *
+from authorization import *
 
 app = Flask(__name__)
 sockets = Sockets(app)
@@ -151,21 +151,45 @@ def client_registration() -> Response or dict:
                'client_id': client_id,
             }
         else:
-            logger.info(f'{request.get_json()}, incorrect username or pass')
-            return {
-                'Error': 'incorrect username or pass'
-            }
+            return error_authorization(request)
     else:
         if username is None:
-            return {
-                'Error': 'incorrect username or pass'
-            }
+            return error_authorization(request)
         client_id = add_client(username, password)
         logger.info(f'client: {username}, registered')
         return {
             'registration': username,
             'client_id': client_id
         }
+
+
+@app.route('/client/<client_id>/time', methods=["GET"])
+def client_log_time_work(client_id: int):
+    username = list(clients.get(client_id).keys())[0]
+    if user_exist(username):
+        with open(f'{username}_system_load.csv', 'r') as file:
+            count = file.readlines()
+            time_start_write = count[1].split(';')[0]
+            last_time = count[-1].split(';')[0]
+            response_js = {
+                "start": time_start_write,
+                "end": last_time
+            }
+            return response_js, 200
+    else:
+        return error_authorization(request)
+
+
+@app.route('/client/<client_id>/time/report', methods=["GET"])
+def split_client_log(client_id):
+    username = list(clients.get(client_id).keys())[0]
+    if user_exist(username):
+        start = request.args.get('start')
+        end = request.args.get('end')
+        payload = client_log_request(username, start, end)
+        return payload, 200
+    else:
+        return error_authorization(request)
 
 
 if __name__ == "__main__":

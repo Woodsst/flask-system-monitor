@@ -1,6 +1,4 @@
 import json
-import time
-import os
 
 import pytest
 
@@ -95,55 +93,3 @@ def test_work_time(ws_api):
     assert len(response_js['payload']) == 2
     assert isinstance(response_js['payload']['start_work'], str)
     assert isinstance(response_js['payload']['actual_time'], str)
-
-
-def test_write_response_data_cpu(ws_api):
-    ws_api.get(hello)
-    ws_api.get(subscribe_cpu_interval_0)
-    assert ws_api.recv() == welcome
-    time.sleep(0.9)
-    path = os.getcwd()
-    path = path.removesuffix('client')
-    path += 'server'
-    csv_data = open(f'{path}/cpu_load.csv', 'r')
-    file_string = csv_data.readlines()
-    assert file_string[0] == 'Request Id;Time;cpu\n'
-    assert file_string[1].split(';')[-1] == 'tracking start\n'
-    assert file_string[-1].split(';')[-1] == 'tracking end\n'
-    ws_api.get(unsubscribe_cpu)
-    os.remove(path=f'{path}/cpu_load.csv')
-
-
-def test_write_response_data_mem(ws_api):
-    ws_api.get(hello)
-    ws_api.get(subscribe_mem_interval_0)
-    assert ws_api.recv() == welcome
-    time.sleep(0.5)
-    path = os.getcwd()
-    path = path.removesuffix('client')
-    path += 'server'
-    csv_data = open(f'{path}/mem_load.csv', 'r')
-    file_string = csv_data.readlines()
-    assert file_string[0] == 'Request Id;Time;mem\n'
-    assert file_string[1].split(';')[-1] == 'tracking start\n'
-    assert file_string[-1].split(';')[-1] == 'tracking end\n'
-    ws_api.get(unsubscribe_mem)
-    os.remove(path=f'{path}/mem_load.csv')
-
-
-def test_write_response_data_storage(ws_api):
-    ws_api.get(hello)
-    ws_api.get(subscribe_storage_interval_0)
-    assert ws_api.recv() == welcome
-    time.sleep(0.5)
-    path = os.getcwd()
-    path = path.removesuffix('client')
-    path += 'server'
-    csv_data = open(f'{path}/storage_load.csv', 'r')
-    file_string = csv_data.readlines()
-    assert file_string[0] == 'Request Id;Time;storage\n'
-    assert file_string[1].split(';')[-1] == 'tracking start\n'
-    assert file_string[-1].split(';')[-1] == 'tracking end\n'
-    ws_api.get(unsubscribe_mem)
-    os.remove(path=f'{path}/storage_load.csv')
-

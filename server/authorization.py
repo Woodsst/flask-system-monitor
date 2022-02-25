@@ -1,5 +1,6 @@
 import uuid
 import base64
+import logging
 
 clients = {
     'uniq_id': {'username': 'pass'},
@@ -35,3 +36,10 @@ def hash_authorization(client_id: int, client_hash: str) -> bool:
     if client_hash == hash_authorize_client.decode():
         return True
     return False
+
+
+def error_authorization(request):
+    logging.info(f'{request.get_json()}, incorrect username or pass')
+    return {
+        'Error': 'incorrect username or pass'
+    }

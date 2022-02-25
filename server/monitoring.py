@@ -1,5 +1,4 @@
 import time
-import os
 
 from cpu_monitor import cpu_load
 from protocol import WorkTime
@@ -25,6 +24,25 @@ def write_client_data(data, username):  # data = {cpu: 123, mem: 123, storage: 1
     cpu = data.get('cpu_load', '')
     mem = data.get('mem', '')
     storage = data.get('storage', '')
-    current_time = time.strftime("%d %b %H:%M:%S")
+    current_time = data.get('time')
     with open(f'{username}_system_load.csv', 'a') as file:
         file.write(f'{current_time};{cpu};{mem};{storage}\n')
+
+
+def client_log_request(username, start_log, end_log):
+    with open(f'{username}_system_load.csv', 'r') as file:
+        file_string = file.readlines()
+        start_index = 0
+        end_index = 0
+        payload = []
+        for sting in file_string:
+            if start_log in sting:
+                start_index = file_string.index(sting)
+            if end_log in sting:
+                end_index = file_string.index(sting)
+        for sting in file_string[start_index:end_index]:
+            payload.append(sting.strip())
+        return {
+            "payload": payload
+        }
+        
