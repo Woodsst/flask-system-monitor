@@ -25,13 +25,15 @@ def add_client(username: str, password: str) -> int:
 
 
 def user_verification(user_name: str) -> bool:
-    with open('clients.csv', 'r') as file:
-        for string in file.readlines():
-            strip = string.strip()
-            username, client_id = strip.split(';')
-            if user_name == username:
-                return True
-    return False
+    try:
+        with open('clients.csv', 'r') as file:
+            for string in file.readlines():
+                strip = string.strip()
+                username, client_id = strip.split(';')
+                if user_name == username:
+                    return True
+    except FileNotFoundError:
+        return False
 
 
 def error_authorization(request):
