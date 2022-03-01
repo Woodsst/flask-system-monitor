@@ -93,9 +93,8 @@ class WebSocketMessageHandler:
             self.event_thread.start()
 
     def message_client_data(self, request):
-        if request.client_id in clients:
-            username = clients.get(request.client_id).keys()
-            username = list(username)[0]
+        username = id_verification(request.client_id)
+        if username:
             if len(request.client_data) > 0:
                 write_client_data(data=request.client_data, username=username)
                 self.websocket.send(str(protocol.DataReturn(data=request.client_data)))

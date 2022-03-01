@@ -30,6 +30,3 @@ def logger_config():
     }
 
     config.dictConfig(log_config)
-
-
-logger_config()

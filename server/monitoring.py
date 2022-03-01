@@ -20,7 +20,7 @@ def write_server_system_load():
             csv.flush()
 
 
-def write_client_data(data, username):  # data = {cpu: 123, mem: 123, storage: 123}
+def write_client_data(data, username):
     cpu = data.get('cpu_load', '')
     mem = data.get('mem', '')
     storage = data.get('storage', '')

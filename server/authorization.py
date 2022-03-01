@@ -1,40 +1,46 @@
-import uuid
 import base64
 import logging
 
-clients = {
-    'uniq_id': {'username': 'pass'},
-}
 
-
-def authorization(user: str, password: str) -> (bool, int):
-    for client_id, client in clients.items():
-        if user in client.keys() and password in client.values():
-            return client_id
+def authorization(username: str, password: str) -> (bool, int):
+    with open('Clients.csv', 'r') as file:
+        for string in file.readlines():
+            strip = string.strip()
+            name, client_id = strip.split(';')
+            uniq_id = base64.b64encode(f'{username}:{password}'.encode())
+            uniq_id = uniq_id.decode()
+            if client_id == uniq_id:
+                return client_id
+    return False
 
 
 def add_client(username: str, password: str) -> int:
-    uniq_id = str(uuid.uuid4())
-    clients.update({uniq_id: {username: password}})
+    uniq_id = base64.b64encode(f'{username}:{password}'.encode())
+    uniq_id = uniq_id.decode()
+    with open('Clients.csv', 'a') as file:
+        file.write(f'{username};{uniq_id}\n')
     with open(f'{username}_system_load.csv', 'w') as file:
         file.write(f'time;cpu;memory;storage\n')
     return uniq_id
 
 
 def user_exist(user_name: str) -> bool:
-    for _, client in clients.items():
-        if user_name in client:
-            return True
+    with open('Clients.csv', 'r') as file:
+        for string in file.readlines():
+            strip = string.strip()
+            username, client_id = strip.split(';')
+            if user_name == username:
+                return True
     return False
 
 
-def hash_authorization(client_id: int, client_hash: str) -> bool:
-    client = clients[client_id]
-    client_username = list(client.keys())[0]
-    client_password = list(client.values())[0]
-    hash_authorize_client = base64.b64encode(f'{client_username}:{client_password}'.encode())
-    if client_hash == hash_authorize_client.decode():
-        return True
+def hash_authorization(client_hash: str) -> bool:
+    with open('Clients.csv', 'r') as file:
+        for string in file.readlines():
+            strip = string.strip()
+            username, client_id_in_file = strip.split(';')
+            if client_hash == client_id_in_file:
+                return True
     return False
 
 
@@ -43,3 +49,13 @@ def error_authorization(request):
     return {
         'Error': 'incorrect username or pass'
     }
+
+
+def id_verification(client_id):
+    with open('Clients.csv', 'r') as file:
+        for string in file.readlines():
+            strip = string.strip()
+            username, client_id_in_file = strip.split(';')
+            if client_id == client_id_in_file:
+                return username
+    return False
