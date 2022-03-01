@@ -2,19 +2,18 @@ import logging
 import threading
 import time
 
-from logger_config import logger_config
-
 from flask import Flask, make_response, request, Response, jsonify
 from flask_sockets import Sockets, Rule
 
+from authorization import user_verification, authorization, error_authorization, add_client, \
+    id_verification
 from cpu_monitor import cpu_load, cpu_core_info, cpu_frequencies
 from datatype import DataType
+from logger_config import logger_config
 from memory_monitor import memory_info
 from message_handler import WebSocketMessageHandler
-from storage_monitor import storage_info
 from monitoring import write_client_data, client_log_request, write_server_system_load, service_time
-from authorization import hash_authorization, user_exist, authorization, error_authorization, add_client, \
-    id_verification
+from storage_monitor import storage_info
 
 app = Flask(__name__)
 sockets = Sockets(app)
@@ -125,29 +124,26 @@ def start_time() -> Response or dict:
 
 
 @app.route(f'/client/<client_id>', methods=['POST'])
-def route_for_client(client_id: int) -> Response:
+def route_for_client(client_id) -> Response:
     client_hash = request.headers.get('Authorization').removeprefix('Basic ')
-    username = id_verification(client_id)
+    username = id_verification(client_hash)
     if username:
-        if hash_authorization(client_hash):
-            data = request.form
-            if len(data) > 0:
-                write_client_data(data, username)
-                return jsonify(request.form), 202
-            logger.info(f'client - {username} incorrect data size')
-            return jsonify(f'client - {username} incorrect data size'), 401
-        else:
-            logger.info(f'client - {username} incorrect hash')
-            return jsonify(f'client - {username} incorrect hash'), 401
+        data = request.form
+        if len(data) > 0:
+            write_client_data(data, username)
+            return jsonify(request.form), 202
+        logger.info(f'client - {username} incorrect data size')
+        return jsonify(''), 401
     else:
-        return error_authorization(request)
+        logger.info(f'client - {username} incorrect hash')
+        return jsonify(''), 401
 
 
 @app.route('/client', methods=['POST'])
 def client_registration() -> Response or dict:
     username = request.get_json()['username']
     password = request.get_json()['pass']
-    if user_exist(username):
+    if user_verification(username):
         client_id = authorization(username=username, password=password)
         if client_id:
             logger.info(f'client: {username}, authorization')
@@ -169,39 +165,31 @@ def client_registration() -> Response or dict:
 
 @app.route('/client/<client_id>/time', methods=["GET"])
 def client_log_time_work(client_id):
-    with open('Clients.csv', 'r') as file:
-        for string in file.readlines():
-            string.strip()
-            username, client_id_in_file = string.split(';')
-            if client_id == client_id_in_file:
-                if user_exist(username):
-                    with open(f'{username}_system_load.csv', 'r') as file:
-                        count = file.readlines()
-                        time_start_write = count[1].split(';')[0]
-                        last_time = count[-1].split(';')[0]
-                        response_js = {
-                            "start": time_start_write,
-                            "end": last_time
-                        }
-                        return response_js, 200
-                else:
-                    return error_authorization(request)
+    username = id_verification(client_id)
+    if username and user_verification(username):
+        with open(f'{username}_system_load.csv', 'r') as file:
+            count = file.readlines()
+            time_start_write = count[1].split(';')[0]
+            last_time = count[-1].split(';')[0]
+            response_js = {
+                "start": time_start_write,
+                "end": last_time
+            }
+            return response_js, 200
+    else:
+        return error_authorization(request)
 
 
 @app.route('/client/<client_id>/time/report', methods=["GET"])
 def split_client_log(client_id):
-    with open('Clients.csv', 'r') as file:
-        for string in file.readlines():
-            string.strip()
-            username, client_id_in_file = string.split(';')
-            if client_id == client_id_in_file:
-                if user_exist(username):
-                    start = request.args.get('start')
-                    end = request.args.get('end')
-                    payload = client_log_request(username, start, end)
-                    return payload, 200
-                else:
-                    return error_authorization(request)
+    username = id_verification(client_id)
+    if username and user_verification(username):
+        start = request.args.get('start')
+        end = request.args.get('end')
+        payload = client_log_request(username, start, end)
+        return payload, 200
+    else:
+        return error_authorization(request)
 
 
 if __name__ == "__main__":

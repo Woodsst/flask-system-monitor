@@ -5,7 +5,7 @@ __pycache__/
 .idea
 server_system_load.csv
 .pytest_cache
-
+clients.csv
 
 # C extensions
 *.so
