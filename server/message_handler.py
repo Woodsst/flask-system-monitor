@@ -105,7 +105,7 @@ class WebSocketMessageHandler:
     def message_client_registration(self, request):
         username = request.username
         password = request.password
-        if user_exist(username):
+        if user_verification(username):
             client_id = authorization(username, password)
             if client_id:
                 self.websocket.send(str(protocol.ExistClient(client_id)))
