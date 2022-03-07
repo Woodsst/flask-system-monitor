@@ -12,3 +12,10 @@ def test_api_200(api_client):
 def test_api_405(api_client):
     response = api_client.post('/api')
     assert response.status_code == 405, f'{response.status_code}'
+    response = api_client.put('/api')
+    assert response.status_code == 405, f'{response.status_code}'
+    response = api_client.patch('/api')
+    assert response.status_code == 405, f'{response.status_code}'
+    response = api_client.delete('/api')
+    assert response.status_code == 405, f'{response.status_code}'
+

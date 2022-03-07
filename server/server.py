@@ -1,3 +1,4 @@
+import json
 import logging
 import threading
 import time
@@ -6,7 +7,7 @@ from flask import Flask, make_response, request, Response, jsonify
 from flask_sockets import Sockets, Rule
 
 from authorization import user_verification, authorization, error_authorization, add_client, \
-    id_verification
+    id_verification, to_json_for_client_data
 from cpu_monitor import cpu_load, cpu_core_info, cpu_frequencies
 from datatype import DataType
 from logger_config import logger_config
@@ -125,13 +126,17 @@ def start_time() -> Response or dict:
 
 @app.route(f'/client/<client_id>', methods=['POST'])
 def route_for_client(client_id) -> Response:
-    client_hash = request.headers.get('Authorization').removeprefix('Basic ')
+    try:
+        request.headers.get('Authorization').split(' ')[-1]
+    except AttributeError:
+        return jsonify(''), 401
+    client_hash = request.headers.get('Authorization').split(' ')[-1]
     username = id_verification(client_hash)
     if username:
-        data = request.form
+        data = request.form.to_dict()
         if len(data) > 0:
             write_client_data(data, username)
-            return jsonify(request.form), 202
+            return to_json_for_client_data(data), 202
         logger.info(f'client - {username} incorrect data size')
         return jsonify(''), 401
     else:
@@ -151,10 +156,10 @@ def client_registration() -> Response or dict:
                 'client_id': client_id,
             }
         else:
-            return error_authorization(request)
+            return error_authorization(request), 401
     else:
-        if username is None:
-            return error_authorization(request)
+        if username is None or len(username) == 0:
+            return error_authorization(request), 401
         client_id = add_client(username, password)
         logger.info(f'client: {username}, registered')
         return {
@@ -177,7 +182,7 @@ def client_log_time_work(client_id):
             }
             return response_js, 200
     else:
-        return error_authorization(request)
+        return error_authorization(request), 401
 
 
 @app.route('/client/<client_id>/time/report', methods=["GET"])
@@ -189,7 +194,7 @@ def split_client_log(client_id):
         payload = client_log_request(username, start, end)
         return payload, 200
     else:
-        return error_authorization(request)
+        return error_authorization(request), 401
 
 
 if __name__ == "__main__":

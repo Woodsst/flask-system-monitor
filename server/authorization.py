@@ -1,4 +1,5 @@
 import base64
+import json
 import logging
 
 
@@ -51,3 +52,11 @@ def id_verification(client_id: str) -> str or bool:
             if client_id == client_id_in_file:
                 return username
     return False
+
+
+def to_json_for_client_data(data: dict):
+    for key, value in data.items():
+        if key == 'cpu_load':
+            data[key] = float(data[key])
+        data[key] = int(data[key])
+    return json.dumps(data)
