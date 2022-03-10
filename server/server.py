@@ -173,6 +173,10 @@ def client_log_time_work(client_id):
     if username and user_verification(username):
         with open(f'{username}_system_load.csv', 'r') as file:
             count = file.readlines()
+            if len(count) <= 1:
+                return jsonify({
+                    'error': 'log file is empty'
+                }), 416
             time_start_write = count[1].split(';')[0]
             last_time = count[-1].split(';')[0]
             response_js = {

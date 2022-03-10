@@ -31,8 +31,16 @@ def write_client_data(data, username):
 
 def client_log_request(username, start_log, end_log):
     with open(f'{username}_system_load.csv', 'r') as file:
-        file_string = file.readlines()
         payload = []
+        file_string = file.readlines()
+        if len(file_string) <= 1:
+            return
+        if (start_log == 0 and end_log == 0) or (start_log is None and end_log is None):
+            for string in file_string:
+                payload.append(string.strip())
+            return {
+                "payload": payload
+            }
         for string in file_string:
             if start_log >= string[0] <= end_log:
                 payload.append(string.strip())

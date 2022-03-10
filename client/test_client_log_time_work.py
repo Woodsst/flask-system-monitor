@@ -24,6 +24,10 @@ def test_client_log_time_work(api_client):
     api_client.post(path='/client', json={'username': user, 'pass': password})
     api_client.post(f'/client/{client_id}', data=data, headers=header)
     api_client.post(f'/client/{client_id}', data=data_2, headers=header)
+    response = api_client.get(f'/client/{client_id}/time')
+    response_js = response.json()
+    assert response_js['start'] == '1646650624'
+    assert response_js['end'] == '1646650625'
     with open(f'{server_directory}/{user}_system_load.csv', 'r') as file:
         count = file.readlines()
         time_start_write = count[1].split(';')[0]
