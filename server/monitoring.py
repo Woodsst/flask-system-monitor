@@ -35,7 +35,7 @@ def client_log_request(username, start_log, end_log):
         file_string = file.readlines()
         if len(file_string) <= 1:
             return
-        if (start_log == 0 and end_log == 0) or (start_log is None and end_log is None):
+        if (start_log == 0 and end_log == 0) or (len(start_log) == 0 and len(end_log) == 0):
             for string in file_string:
                 payload.append(string.strip())
             return {

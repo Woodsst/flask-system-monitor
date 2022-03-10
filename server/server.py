@@ -2,6 +2,7 @@ import json
 import logging
 import threading
 import time
+from typing import Union, Tuple
 
 from flask import Flask, make_response, request, Response, jsonify
 from flask_sockets import Sockets, Rule
@@ -124,7 +125,7 @@ def start_time() -> Response or dict:
 
 
 @app.route(f'/client/<client_id>', methods=['POST'])
-def route_for_client(client_id) -> Response:
+def route_for_client(client_id) -> Union[tuple[Response, int], tuple[any, int]]:
     try:
         request.headers.get('Authorization').split(' ')[-1]
     except AttributeError:
