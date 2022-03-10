@@ -70,7 +70,6 @@ def memory_all_info() -> Response or dict:
     raw_units = request.args.get('units', "GB")
     try:
         units = DataType(raw_units)
-        print(units)
     except ValueError:
         return make_response("Bad units provided", 400)
     return memory_info(units)

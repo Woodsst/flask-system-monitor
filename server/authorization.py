@@ -58,5 +58,6 @@ def to_json_for_client_data(data: dict):
     for key, value in data.items():
         if key == 'cpu_load':
             data[key] = float(data[key])
+            continue
         data[key] = int(data[key])
     return json.dumps(data)

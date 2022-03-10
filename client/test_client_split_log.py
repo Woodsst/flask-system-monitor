@@ -31,6 +31,6 @@ def test_split_log(api_client):
     assert response.status_code == 200
     assert isinstance(response_json['payload'], list)
     assert len(response_json) == 1
-    assert len(response_json['payload']) == 2
+    assert len(response_json['payload']) == 3
     os.remove(f'{server_directory}/clients.csv')
     os.remove(f'{server_directory}/user_system_load.csv')
