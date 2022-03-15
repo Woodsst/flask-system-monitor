@@ -29,20 +29,21 @@ def write_client_data(data, username):
         file.write(f'{current_time};{cpu};{mem};{storage}\n')
 
 
-def client_log_request(username, start_log, end_log):
+def client_log_request(username, start_log: int, end_log: int) -> dict:
     with open(f'{username}_system_load.csv', 'r') as file:
         payload = []
         file_string = file.readlines()
         if len(file_string) <= 1:
             return
-        if (start_log == 0 and end_log == 0) or (len(start_log) == 0 and len(end_log) == 0):
+        if start_log == 0 and end_log == 0:
             for string in file_string:
                 payload.append(string.strip())
             return {
                 "payload": payload
             }
-        for string in file_string:
-            if start_log >= string[0] <= end_log:
+        for string in file_string[1:]:
+            strng = int(string.strip().split(';')[0])
+            if start_log <= strng <= end_log:
                 payload.append(string.strip())
         return {
             "payload": payload

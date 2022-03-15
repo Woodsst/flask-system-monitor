@@ -168,7 +168,7 @@ def client_registration() -> Response or dict:
 
 
 @app.route('/client/<client_id>/time', methods=["GET"])
-def client_log_time_work(client_id):
+def client_log_time_work(client_id) -> Response:
     username = id_verification(client_id)
     if username and user_verification(username):
         with open(f'{username}_system_load.csv', 'r') as file:
@@ -189,12 +189,15 @@ def client_log_time_work(client_id):
 
 
 @app.route('/client/<client_id>/time/report', methods=["GET"])
-def split_client_log(client_id):
+def split_client_log(client_id: str) -> Response:
     username = id_verification(client_id)
     if username and user_verification(username):
         start = request.args.get('start')
         end = request.args.get('end')
-        payload = client_log_request(username, start, end)
+        if (len(end) and len(start)) == 0:
+            start = 0
+            end = 0
+        payload = client_log_request(username, int(start), int(end))
         return payload, 200
     else:
         return error_authorization(request), 401
