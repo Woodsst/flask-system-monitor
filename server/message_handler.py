@@ -26,24 +26,21 @@ class ClientStatus(enum.Enum):
 request_id_numbers = set()
 
 
-class RequestHandler:
-
-    @staticmethod
-    def handler(data):
-        message = data
-        if 'CPU' in message.data:
-            cpu = cpu_monitor.cpu_load(0.1)
-        else:
-            cpu = None
-        if 'MEM' in message.data:
-            mem = memory_monitor.memory_info(DataType.Megabyte)
-        else:
-            mem = None
-        if 'STORAGE' in message.data:
-            storage = storage_monitor.storage_info(DataType.Gigabyte)
-        else:
-            storage = None
-        return str(protocol.Event(cpu, mem, storage, message.request_id))
+def handler_data_for_protocol(data):
+    message = data
+    if 'CPU' in message.data:
+        cpu = cpu_monitor.cpu_load(0.1)
+    else:
+        cpu = None
+    if 'MEM' in message.data:
+        mem = memory_monitor.memory_info(DataType.Megabyte)
+    else:
+        mem = None
+    if 'STORAGE' in message.data:
+        storage = storage_monitor.storage_info(DataType.Gigabyte)
+    else:
+        storage = None
+    return str(protocol.Event(cpu, mem, storage, message.request_id))
 
 
 class WebSocketMessageHandler:
@@ -60,11 +57,13 @@ class WebSocketMessageHandler:
         logger.debug(f'included in web socket - {message}')
         try:
             json_data = json.loads(message)
+        except TypeError:
+            logger.debug('incorrect request from client or client disconnect')
+            return
         except json.decoder.JSONDecodeError:
             self.websocket.send(json.dumps(protocol.Error.ERROR_DATA_TYPE))
-            logger.info(f'{message}, Data type incorrect')
+            logger.debug(f'{message}, Data type incorrect')
             return
-
         client_request = protocol.MessageBase.deserialize(json_data)
         return client_request
 
@@ -145,5 +144,5 @@ class WebSocketMessageHandler:
 
     def event(self, request):
         while self.client_status == ClientStatus.SUBSCRIBED and request.request_id in request_id_numbers:
-            self.websocket.send(RequestHandler.handler(request))
+            self.websocket.send(handler_data_for_protocol(request))
             time.sleep(self.interval)
