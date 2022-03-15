@@ -1,8 +1,7 @@
-import json
 import logging
 import threading
 import time
-from typing import Union, Tuple
+from typing import Union
 
 from flask import Flask, make_response, request, Response, jsonify
 from flask_sockets import Sockets, Rule
@@ -208,6 +207,10 @@ if __name__ == "__main__":
     thread_cpu_info.start()
     from gevent import pywsgi
     from geventwebsocket.handler import WebSocketHandler
+
     server = pywsgi.WSGIServer(('', 5000), app, handler_class=WebSocketHandler)
     sockets.url_map.add(Rule("/echo", endpoint=echo_socket, websocket=True))
-    server.serve_forever()
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
