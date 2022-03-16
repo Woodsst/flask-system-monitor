@@ -51,4 +51,16 @@ def client_log_request(username, start_log: int, end_log: int) -> dict:
         return {
             "payload": payload
         }
-        
+
+
+def time_write_log(username: str) -> dict:
+    with open(f'{username}_system_load.csv', 'r', encoding='utf-8') as file:
+        count = file.readlines()
+        if len(count) <= 1:
+            return {"error": "log file is empty"}, 416
+        time_start_write = count[1].split(';')[0]
+        last_time = count[-1].split(';')[0]
+        return {
+            "start": time_start_write,
+            "end": last_time
+        }
