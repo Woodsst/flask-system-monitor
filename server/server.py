@@ -13,7 +13,7 @@ from datatype import DataType
 from logger_config import logger_config
 from memory_monitor import memory_info
 from message_handler import WebSocketMessageHandler
-from monitoring import write_client_data, client_log_request, write_server_system_load, service_time
+from monitoring import write_client_data, client_log_request, write_server_system_load, service_time, time_write_log
 from storage_monitor import storage_info
 
 app = Flask(__name__)
@@ -131,8 +131,7 @@ def route_for_client(client_id) -> Union[tuple[Response, int], tuple[any, int]]:
             return jsonify(''), 401
     except AttributeError:
         return jsonify(''), 401
-    client_hash = request.headers.get('Authorization').split(' ')[-1]
-    username = id_verification(client_hash)
+    username = id_verification(client)
     if username:
         data = request.form.to_dict()
         if len(data) > 0:
@@ -152,37 +151,26 @@ def client_registration() -> Response or dict:
         client_id = authorization(username=username, password=password)
         if client_id:
             logger.info('client: %s, authorization', username)
-            return {
-                'client_id': client_id,
-            }
+            return jsonify({'client_id': client_id})
         return error_authorization(request), 401
     if username is None or len(username) == 0:
         return error_authorization(request), 401
     client_id = add_client(username, password)
     logger.info('client: %s, registered', username)
-    return {
+    return jsonify({
         'registration': username,
         'client_id': client_id
-    }
+    })
 
 
 @app.route('/client/<client_id>/time', methods=["GET"])
 def client_log_time_work(client_id: str) -> Response:
     username = id_verification(client_id)
     if username and user_verification(username):
-        with open(f'{username}_system_load.csv', 'r', encoding='utf-8') as file:
-            count = file.readlines()
-            if len(count) <= 1:
-                return jsonify({
-                    'error': 'log file is empty'
-                }), 416
-            time_start_write = count[1].split(';')[0]
-            last_time = count[-1].split(';')[0]
-            response_js = {
-                "start": time_start_write,
-                "end": last_time
-            }
-            return response_js, 200
+        response_js = time_write_log(username)
+        if response_js.get('error'):
+            return response_js
+        return response_js, 200
     else:
         return error_authorization(request), 401
 
@@ -199,9 +187,7 @@ def split_client_log(client_id: str) -> Response:
         try:
             payload = client_log_request(username, int(start), int(end))
         except ValueError:
-            return jsonify({
-                    'error': 'value error'
-                }), 400
+            return jsonify({'error': 'value error'}), 400
         return payload, 200
     return error_authorization(request), 401
 
