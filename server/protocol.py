@@ -35,11 +35,11 @@ class MessageBase:
         client_id = data.get('client_id')
         if username is not None:
             return message_cls(username=username, password=password)
-        elif message_data is not None and isinstance(message_data, (int, float, dict)):
+        if message_data is not None and isinstance(message_data, (int, float, dict)):
             return message_cls(message_data, interval, client_id)
-        elif message_data is not None and len(message_data) != 0:
+        if message_data is not None and len(message_data) != 0:
             return message_cls(message_data, request_id, interval)
-        elif request_id is not None:
+        if request_id is not None:
             return message_cls(request_id=request_id)
         return message_cls
 
@@ -71,7 +71,7 @@ class Welcome(MessageBase):
 class Subscribe(MessageBase):
     type: MessageType = MessageType.SUBSCRIBE
 
-    def __init__(self, data: list, request_id, interval):
+    def __init__(self, data: list, request_id: int, interval: float):
         self.data = data
         self.request_id = request_id
         self.interval = interval
@@ -80,28 +80,28 @@ class Subscribe(MessageBase):
 class Subscribed(MessageBase):
     type: MessageType = MessageType.SUBSCRIBED
 
-    def __init__(self, request_id):
+    def __init__(self, request_id: int):
         self.request_id = request_id
 
 
 class Unsubscribe(MessageBase):
     type: MessageType = MessageType.UNSUBSCRIBE
 
-    def __init__(self, request_id):
+    def __init__(self, request_id: int):
         self.request_id = request_id
 
 
 class Unsubscribed(MessageBase):
     type: MessageType = MessageType.UNSUBSCRIBED
 
-    def __init__(self, request_id):
+    def __init__(self, request_id: int):
         self.request_id = request_id
 
 
 class WorkTime(MessageBase):
     type: MessageType = MessageType.WORK_TIME
 
-    def __init__(self, start_time, actual_time):
+    def __init__(self, start_time: int, actual_time: int):
         self.start_work = start_time
         self.actual_time = actual_time
 
@@ -109,7 +109,8 @@ class WorkTime(MessageBase):
 class Event(MessageBase):
     type: MessageType = MessageType.EVENT
 
-    def __init__(self, cpu=None, mem=None, storage=None, request_id=None):
+    def __init__(self, cpu: float = None, mem: dict = None,
+                 storage: dict = None, request_id: int = None):
         self.request = request_id
         self.cpu = cpu
         self.mem = mem
@@ -119,7 +120,7 @@ class Event(MessageBase):
 class ClientData(MessageBase):
     type: MessageType = MessageType.CLIENT_DATA
 
-    def __init__(self, client_data, interval, client_id):
+    def __init__(self, client_data: dict, interval: int, client_id: str):
         self.client_data = client_data
         self.interval = interval
         self.client_id = client_id
@@ -128,14 +129,14 @@ class ClientData(MessageBase):
 class DataReturn(MessageBase):
     type: MessageType = MessageType.DATA_RETURN
 
-    def __init__(self, data):
+    def __init__(self, data: dict):
         self.data = data
 
 
 class RegistrationClient(MessageBase):
     type: MessageType = MessageType.REGISTRATION_CLIENT
 
-    def __init__(self, username, password):
+    def __init__(self, username: str, password: str):
         self.username = username
         self.password = password
 
@@ -143,14 +144,14 @@ class RegistrationClient(MessageBase):
 class ExistClient(MessageBase):
     type: MessageType = MessageType.EXIST_CLIENT
 
-    def __init__(self, client_id):
+    def __init__(self, client_id: str):
         self.client_id = client_id
 
 
 class AddClient(MessageBase):
     type: MessageType = MessageType.ADD_CLIENT
 
-    def __init__(self, username, client_id):
+    def __init__(self, username: str, client_id: str):
         self.username = username
         self.client_id = client_id
 

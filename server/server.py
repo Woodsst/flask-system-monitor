@@ -23,7 +23,7 @@ logger = logging.getLogger(__file__)
 
 
 @app.route("/")
-def welcome():
+def welcome() -> str:
     return "<p>Welcome</p>"
 
 
@@ -123,10 +123,12 @@ def start_time() -> Response or dict:
     return service_time(server_start)
 
 
-@app.route(f'/client/<client_id>', methods=['POST'])
+@app.route('/client/<client_id>', methods=['POST'])
 def route_for_client(client_id) -> Union[tuple[Response, int], tuple[any, int]]:
     try:
-        request.headers.get('Authorization').split(' ')[-1]
+        client = request.headers.get('Authorization').split(' ')[-1]
+        if client != client_id:
+            return jsonify(''), 401
     except AttributeError:
         return jsonify(''), 401
     client_hash = request.headers.get('Authorization').split(' ')[-1]
@@ -136,11 +138,10 @@ def route_for_client(client_id) -> Union[tuple[Response, int], tuple[any, int]]:
         if len(data) > 0:
             write_client_data(data, username)
             return to_json_for_client_data(data), 202
-        logger.info(f'client - {username} incorrect data size')
+        logger.info('client - %s incorrect data size', username)
         return jsonify(''), 401
-    else:
-        logger.info(f'client - {username} incorrect hash')
-        return jsonify(''), 401
+    logger.info('client - %s incorrect client_id', username)
+    return jsonify(''), 401
 
 
 @app.route('/client', methods=['POST'])
@@ -150,28 +151,26 @@ def client_registration() -> Response or dict:
     if user_verification(username):
         client_id = authorization(username=username, password=password)
         if client_id:
-            logger.info(f'client: {username}, authorization')
+            logger.info('client: %s, authorization', username)
             return {
                 'client_id': client_id,
             }
-        else:
-            return error_authorization(request), 401
-    else:
-        if username is None or len(username) == 0:
-            return error_authorization(request), 401
-        client_id = add_client(username, password)
-        logger.info(f'client: {username}, registered')
-        return {
-            'registration': username,
-            'client_id': client_id
-        }
+        return error_authorization(request), 401
+    if username is None or len(username) == 0:
+        return error_authorization(request), 401
+    client_id = add_client(username, password)
+    logger.info('client: %s, registered', username)
+    return {
+        'registration': username,
+        'client_id': client_id
+    }
 
 
 @app.route('/client/<client_id>/time', methods=["GET"])
-def client_log_time_work(client_id) -> Response:
+def client_log_time_work(client_id: str) -> Response:
     username = id_verification(client_id)
     if username and user_verification(username):
-        with open(f'{username}_system_load.csv', 'r') as file:
+        with open(f'{username}_system_load.csv', 'r', encoding='utf-8') as file:
             count = file.readlines()
             if len(count) <= 1:
                 return jsonify({
@@ -197,10 +196,14 @@ def split_client_log(client_id: str) -> Response:
         if (len(end) and len(start)) == 0:
             start = 0
             end = 0
-        payload = client_log_request(username, int(start), int(end))
+        try:
+            payload = client_log_request(username, int(start), int(end))
+        except ValueError:
+            return jsonify({
+                    'error': 'value error'
+                }), 400
         return payload, 200
-    else:
-        return error_authorization(request), 401
+    return error_authorization(request), 401
 
 
 if __name__ == "__main__":
