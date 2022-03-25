@@ -10,7 +10,6 @@ raw_directory = os.getcwd().split('/')
 raw_directory.pop(-1)
 server_directory = '/'.join(raw_directory) + '/server'
 try:
-    os.remove(f'{server_directory}/clients.csv')
     os.remove(f'{server_directory}/user_system_load.csv')
 except FileNotFoundError:
     pass
@@ -20,7 +19,7 @@ data_2 = {"cpu_load": 20.9, "mem": 6272, "storage": 95838, "time": 1646650625}
 header = {'Authorization': f'Basic {client_id}'}
 
 
-def test_client_log_time_work(api_client):
+def test_client_log_time_work(api_client, psql):
     api_client.post(path='/client', json={'username': user, 'pass': password})
     api_client.post(f'/client/{client_id}', data=data, headers=header)
     api_client.post(f'/client/{client_id}', data=data_2, headers=header)
@@ -34,5 +33,7 @@ def test_client_log_time_work(api_client):
         last_time = count[-1].split(';')[0]
         assert time_start_write == '1646650624'
         assert last_time == '1646650625'
-    os.remove(f'{server_directory}/clients.csv')
     os.remove(f'{server_directory}/user_system_load.csv')
+    cur = psql.cursor()
+    cur.execute("DELETE FROM clients WHERE username = %s ", params=(user,))
+    psql.commit()

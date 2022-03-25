@@ -14,7 +14,8 @@ data = {"cpu_load": 25.9, "mem": 6172, "storage": 95888, "time": 1646650624}
 header = {'Authorization': f'Basic {client_id}'}
 
 
-def test_client_data_request_202(api_client):
+def test_client_data_request_202(api_client, psql):
+    cur = psql.cursor()
     api_client.post(path='/client', json={'username': user, 'pass': password})
     response = api_client.post(f'/client/{client_id}', data=data,
                                  headers=header)
@@ -29,7 +30,8 @@ def test_client_data_request_202(api_client):
         assert lines_in_file[0].strip() == 'time;cpu;memory;storage'
         assert lines_in_file[-1].strip() == '1646650624;25.9;6172;95888'
     os.remove(f'{server_directory}/user_system_load.csv')
-    os.remove(f'{server_directory}/clients.csv')
+    cur.execute("DELETE FROM clients WHERE username = %s ", params=(user,))
+    psql.commit()
 
 
 def test_client_data_request_405(api_client):
@@ -44,7 +46,7 @@ def test_client_data_request_405(api_client):
     assert response.status_code == 405
 
 
-def test_client_data_request_401(api_client):
+def test_client_data_request_401(api_client, psql):
     api_client.post(path='/client', json={'username': user, 'pass': password})
     response = api_client.post(f'/client/{client_id}', data='',
                                  headers=header)
@@ -55,4 +57,7 @@ def test_client_data_request_401(api_client):
     response = api_client.post(f'/client/{client_id}', data=data,
                                headers='')
     assert response.status_code == 401
+    cur = psql.cursor()
+    cur.execute("DELETE FROM clients WHERE username = %s ", params=(user,))
+    psql.commit()
 
