@@ -14,8 +14,9 @@ def authorization(username: str, password: str) -> bool or int:
     uniq_id = base64.b64encode(f'{username}:{password}'.encode())
     uniq_id = uniq_id.decode()
     cur.execute('SELECT uniq_id FROM clients WHERE uniq_id = %s', (uniq_id,))
-    if cur.fetchone() is not None:
-        client_id = cur.fetchone()[0]
+    fetch = cur.fetchone()
+    if fetch is not None:
+        client_id = fetch[0]
         conn.commit()
         return client_id
     conn.commit()
