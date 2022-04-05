@@ -3,7 +3,7 @@ import json
 import logging
 from db import Psql
 
-db = Psql(username='wood', db_name='clients', password='123')
+db = Psql(username='wood', db_name='clients', password='123', host="database", port=5432)
 
 
 def authorization(username: str, password: str) -> bool or int:

@@ -4,8 +4,8 @@ import psycopg
 
 
 class Psql:
-    def __init__(self, username: str, password: str, db_name: str):
-        self.conn = psycopg.connect(dbname=db_name, user=username, password=password)
+    def __init__(self, username: str, password: str, db_name: str, host: str, port: str):
+        self.conn = psycopg.connect(dbname=db_name, user=username, password=password, host=host, port=port)
         self.cursor = self.conn.cursor()
 
     def commit(self):
