@@ -17,5 +17,5 @@ def api_client():
 
 @pytest.fixture(scope='session')
 def psql():
-    conn = psycopg.connect(dbname='clients', user='wood', password='123')
+    conn = psycopg.connect(dbname='clients', user='wood', password='123', host="database", port=5432)
     yield conn
