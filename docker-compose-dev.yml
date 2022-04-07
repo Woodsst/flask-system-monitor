@@ -11,8 +11,9 @@ services:
   volumes:
     - .:/docker-entrypoint-initdb.d/
  server:
-  build: ./server
+  build: .
   ports:
   - "5000:5000"
   depends_on:
   - database
+  entrypoint: ["/flask_system_monitor/tests/sh_for_tests.sh"]

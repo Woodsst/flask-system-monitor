@@ -1,4 +1,5 @@
 import time
+import os
 
 from cpu_monitor import cpu_load
 from protocol import WorkTime
@@ -6,13 +7,15 @@ from memory_monitor import memory_info
 from datatype import DataType
 from storage_monitor import storage_info
 
+path = os.path.dirname(__file__)
+
 
 def service_time(start_time: int) -> str:
     return str(WorkTime(start_time, time.strftime('%d %b %Y %H:%M:%S')))
 
 
 def write_server_system_load():
-    with open('server_system_load.csv', 'a', encoding='utf-8') as csv:
+    with open(f'{path}/server_system_load.csv', 'a', encoding='utf-8') as csv:
         csv.write('time;cpu load;memory load;storage\n')
         while True:
             csv.write(
@@ -28,12 +31,12 @@ def write_client_data(data: dict, username: str):
     mem = data.get('mem', '')
     storage = data.get('storage', '')
     current_time = data.get('time')
-    with open(f'{username}_system_load.csv', 'a', encoding='utf-8') as file:
+    with open(f'{path}/{username}_system_load.csv', 'a', encoding='utf-8') as file:
         file.write(f'{current_time};{cpu};{mem};{storage}\n')
 
 
 def client_log_request(username, start_log: int, end_log: int) -> dict:
-    with open(f'{username}_system_load.csv', 'r', encoding='utf-8') as file:
+    with open(f'{path}/{username}_system_load.csv', 'r', encoding='utf-8') as file:
         payload = []
         file_string = file.readlines()
         if len(file_string) <= 1:
@@ -54,7 +57,7 @@ def client_log_request(username, start_log: int, end_log: int) -> dict:
 
 
 def time_write_log(username: str) -> dict:
-    with open(f'{username}_system_load.csv', 'r', encoding='utf-8') as file:
+    with open(f'{path}/{username}_system_load.csv', 'r', encoding='utf-8') as file:
         count = file.readlines()
         if len(count) <= 1:
             return {"error": "log file is empty"}, 416
