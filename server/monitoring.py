@@ -38,16 +38,20 @@ def write_client_data(data: dict, username: str):
 def client_log_request(username, start_log: int, end_log: int) -> dict:
     with open(f'{path}/{username}_system_load.csv', 'r', encoding='utf-8') as file:
         payload = []
-        file_string = file.readlines()
-        if len(file_string) <= 1:
-            return
+        flag = 0
         if start_log == 0 and end_log == 0:
-            for string in file_string:
+            for string in file:
+                if flag == 0:
+                    flag += 1
+                    continue
                 payload.append(string.strip())
             return {
                 "payload": payload
             }
-        for string in file_string[1:]:
+        for string in file:
+            if flag == 0:
+                flag += 1
+                continue
             strng = int(string.strip().split(';')[0])
             if start_log <= strng <= end_log:
                 payload.append(string.strip())
@@ -58,11 +62,17 @@ def client_log_request(username, start_log: int, end_log: int) -> dict:
 
 def time_write_log(username: str) -> dict:
     with open(f'{path}/{username}_system_load.csv', 'r', encoding='utf-8') as file:
-        count = file.readlines()
-        if len(count) <= 1:
-            return {"error": "log file is empty"}, 416
-        time_start_write = count[1].split(';')[0]
-        last_time = count[-1].split(';')[0]
+        time_start_write = 0
+        last_time = 0
+        flag = 0
+        for i in file:
+            if flag == 0:
+                flag += 1
+                continue
+            if flag == 1:
+                flag += 1
+                time_start_write = i.split(';')[0]
+            last_time = i.split(';')[0]
         return {
             "start": time_start_write,
             "end": last_time
