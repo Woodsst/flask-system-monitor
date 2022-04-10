@@ -147,6 +147,8 @@ def route_for_client(client_id) -> Union[tuple[Response, int], tuple[any, int]]:
 def client_registration() -> Response or dict:
     username = request.get_json()['username']
     password = request.get_json()['pass']
+    if not username[0].isalpha():
+        return jsonify(''), 400
     if user_verification(username):
         client_id = authorization(username=username, password=password)
         if client_id:
