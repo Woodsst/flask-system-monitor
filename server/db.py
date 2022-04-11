@@ -1,6 +1,8 @@
 import datetime
+from typing import List
 
 import psycopg
+from psycopg import sql
 
 
 class Psql:
@@ -23,6 +25,13 @@ class Psql:
     def add_client(self, uniq_id: str, username: str):
         self.cursor.execute('INSERT INTO clients (username, uniq_id, registration_date) VALUES (%s, %s, %s)',
                             (username, uniq_id, datetime.datetime.now()))
+        self.cursor.execute(
+            sql.SQL(
+                """
+                CREATE TABLE {} 
+                (cpu real, memory real, storage real, time int)
+                """
+            ).format(sql.Identifier(username)))
         self.commit()
 
     def verification_user(self, user_name: str) -> bool:
@@ -42,3 +51,28 @@ class Psql:
         self.commit()
         return False
 
+    def client_log(self, cpu, mem, storage, time, username):
+        self.cursor.execute(sql.SQL("""
+            INSERT INTO {} (cpu, memory, storage, time) 
+            VALUES (%(cpu)s, %(mem)s, %(storage)s, %(time)s)
+            """).format(sql.Identifier(username)), {'cpu': cpu, 'mem': mem, 'storage': storage, 'time': time}
+                            )
+        self.commit()
+
+    def client_log_request(self, username, start, end) -> dict:
+        self.cursor.execute(sql.SQL("""
+        SELECT cpu, memory, storage, time FROM {} WHERE time <= %(end)s and time >= %(start)s
+        """).format(sql.Identifier(username)), {'end': end, 'start': start})
+        return self.cursor.fetchall()
+
+    def client_full_log(self, username) -> List[tuple]:
+        self.cursor.execute(sql.SQL("""
+        SELECT cpu, memory, storage, time FROM {}
+        """).format(sql.Identifier(username)))
+        return self.cursor.fetchall()
+
+    def log_write_time(self, username: str) -> List[tuple]:
+        self.cursor.execute(sql.SQL("""
+        SELECT MIN(time), MAX(time) FROM {}
+        """).format(sql.Identifier(username)))
+        return self.cursor.fetchone()

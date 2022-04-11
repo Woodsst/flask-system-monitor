@@ -6,6 +6,8 @@ from protocol import WorkTime
 from memory_monitor import memory_info
 from datatype import DataType
 from storage_monitor import storage_info
+from authorization import db
+from typing import List
 
 path = os.path.dirname(__file__)
 
@@ -27,53 +29,33 @@ def write_server_system_load():
 
 
 def write_client_data(data: dict, username: str):
-    cpu = data.get('cpu_load', '')
-    mem = data.get('mem', '')
-    storage = data.get('storage', '')
+    cpu = data.get('cpu_load')
+    mem = data.get('mem')
+    storage = data.get('storage')
     current_time = data.get('time')
-    with open(f'{path}/{username}_system_load.csv', 'a', encoding='utf-8') as file:
-        file.write(f'{current_time};{cpu};{mem};{storage}\n')
+    db.client_log(cpu, mem, storage, current_time, username)
 
 
-def client_log_request(username, start_log: int, end_log: int) -> dict:
-    with open(f'{path}/{username}_system_load.csv', 'r', encoding='utf-8') as file:
-        payload = []
-        flag = 0
-        if start_log == 0 and end_log == 0:
-            for string in file:
-                if flag == 0:
-                    flag += 1
-                    continue
-                payload.append(string.strip())
-            return {
-                "payload": payload
-            }
-        for string in file:
-            if flag == 0:
-                flag += 1
-                continue
-            strng = int(string.strip().split(';')[0])
-            if start_log <= strng <= end_log:
-                payload.append(string.strip())
-        return {
-            "payload": payload
-        }
+def client_log_request(username, start: int, end: int) -> dict:
+    if (start and end) > 0:
+        raw_payload = db.client_log_request(username, start, end)
+    else:
+        raw_payload = db.client_full_log(username)
+    return payload_formatting(raw_payload)
+
+
+def payload_formatting(data: List[tuple]) -> dict:
+    payload = []
+    for cpu, mem, storage, unix_time in data:
+        payload.append(dict(cpu=cpu, mem=mem, storage=storage, unix_time=unix_time))
+    return {
+        'payload': payload
+    }
 
 
 def time_write_log(username: str) -> dict:
-    with open(f'{path}/{username}_system_load.csv', 'r', encoding='utf-8') as file:
-        time_start_write = 0
-        last_time = 0
-        flag = 0
-        for i in file:
-            if flag == 0:
-                flag += 1
-                continue
-            if flag == 1:
-                flag += 1
-                time_start_write = i.split(';')[0]
-            last_time = i.split(';')[0]
-        return {
-            "start": time_start_write,
-            "end": last_time
+    raw_time = db.log_write_time(username)
+    return {
+            "start": raw_time[0],
+            "end": raw_time[1]
         }
