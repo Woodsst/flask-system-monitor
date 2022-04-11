@@ -1,13 +1,13 @@
-import time
 import os
-
-from cpu_monitor import cpu_load
-from protocol import WorkTime
-from memory_monitor import memory_info
-from datatype import DataType
-from storage_monitor import storage_info
-from authorization import db
+import time
 from typing import List
+
+from authorization import db
+from cpu_monitor import cpu_load
+from datatype import DataType
+from memory_monitor import memory_info
+from protocol import WorkTime
+from storage_monitor import storage_info
 
 path = os.path.dirname(__file__)
 
@@ -56,6 +56,6 @@ def payload_formatting(data: List[tuple]) -> dict:
 def time_write_log(username: str) -> dict:
     raw_time = db.log_write_time(username)
     return {
-            "start": raw_time[0],
-            "end": raw_time[1]
-        }
+        "start": raw_time[0],
+        "end": raw_time[1]
+    }
