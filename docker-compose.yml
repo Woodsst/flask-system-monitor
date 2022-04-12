@@ -9,7 +9,7 @@ services:
    POSTGRES_PASSWORD: 123
    POSTGRES_DB: clients
   volumes:
-    - .:/docker-entrypoint-initdb.d/
+   - ./db.sql:/docker-entrypoint-initdb.d/db.sql
  server:
   build: ./server
   ports:

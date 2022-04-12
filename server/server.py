@@ -148,7 +148,7 @@ def client_registration() -> Response or dict:
     username = request.get_json()['username']
     password = request.get_json()['pass']
     if not username[0].isalpha():
-        return jsonify(''), 400
+        return jsonify({'error': 'unsupportable username'}), 400
     if user_verification(username):
         client_id = authorization(username=username, password=password)
         if client_id:
