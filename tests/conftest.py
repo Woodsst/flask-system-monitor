@@ -1,6 +1,9 @@
 import psycopg
 import pytest
+from psycopg import sql
+
 from client import WebSocketTestApi, BaseHttpApi
+from client_data import user
 
 
 @pytest.fixture(scope='function')
@@ -15,7 +18,12 @@ def api_client():
     yield httpapi
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='function')
 def psql():
     conn = psycopg.connect(dbname='clients', user='wood', password='123', host="database", port=5432)
-    yield conn
+    try:
+        yield conn
+    finally:
+        conn.cursor().execute("DELETE FROM clients WHERE username = %s ", params=(user,))
+        conn.cursor().execute(sql.SQL("DROP TABLE {}").format(sql.Identifier(user)))
+        conn.commit()

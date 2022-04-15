@@ -21,9 +21,6 @@ def test_client_data_request_202(api_client, psql):
     assert db_data[1] == 6172.0
     assert db_data[2] == 95888.0
     assert db_data[3] == 1646650624
-    cur.execute("DELETE FROM clients WHERE username = %s ", params=(user,))
-    cur.execute(sql.SQL("DROP TABLE {}").format(sql.Identifier(user)))
-    psql.commit()
 
 
 def test_client_data_request_405(api_client):
@@ -49,8 +46,4 @@ def test_client_data_request_401(api_client, psql):
     response = api_client.post(f'/client/{client_id}', data=data,
                                headers='')
     assert response.status_code == 401
-    cur = psql.cursor()
-    cur.execute("DELETE FROM clients WHERE username = %s ", params=(user,))
-    cur.execute(sql.SQL("DROP TABLE {}").format(sql.Identifier(user)))
-    psql.commit()
 

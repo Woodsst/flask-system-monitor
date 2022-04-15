@@ -1,7 +1,6 @@
 import pytest
 
-from psycopg import sql
-from client_data import user, password, client_id, data, data_2, data_3,header
+from client_data import user, password, client_id, data, data_2, data_3, header
 
 
 def test_split_log(api_client, psql):
@@ -15,7 +14,3 @@ def test_split_log(api_client, psql):
     assert isinstance(response_json['payload'], list)
     assert len(response_json) == 1
     assert len(response_json['payload']) == 3
-    cur = psql.cursor()
-    cur.execute("DELETE FROM clients WHERE username = %s ", params=(user,))
-    cur.execute(sql.SQL("DROP TABLE {}").format(sql.Identifier(user)))
-    psql.commit()
