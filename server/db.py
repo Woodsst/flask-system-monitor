@@ -60,16 +60,22 @@ class Psql:
         self.cursor.execute(sql.SQL("""
             SELECT cpu, memory, storage, time FROM {} WHERE time <= %(end)s and time >= %(start)s
         """).format(sql.Identifier(username)), {"end": end, "start": start})
-        return self.cursor.fetchall()
+        fetch = self.cursor.fetchall()
+        self.commit()
+        return fetch
 
     def client_full_log(self, username) -> List[tuple]:
         self.cursor.execute(sql.SQL("""
             SELECT cpu, memory, storage, time FROM {}
         """).format(sql.Identifier(username)))
-        return self.cursor.fetchall()
+        fetch = self.cursor.fetchall()
+        self.commit()
+        return fetch
 
     def log_write_time(self, username: str) -> List[tuple]:
         self.cursor.execute(sql.SQL("""
             SELECT MIN(time), MAX(time) FROM {}
         """).format(sql.Identifier(username)))
-        return self.cursor.fetchone()
+        fetch = self.cursor.fetchone()
+        self.commit()
+        return fetch

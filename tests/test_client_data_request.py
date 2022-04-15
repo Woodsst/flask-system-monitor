@@ -3,13 +3,11 @@ import json
 import os
 
 import pytest
+from psycopg import sql
 
-user = 'user'
+user = 'test_user'
 password = 'password'
 client_id = base64.b64encode(f'{user}:{password}'.encode()).decode()
-raw_directory = os.getcwd().split('/')
-raw_directory.pop(-1)
-server_directory = '/'.join(raw_directory) + '/server'
 data = {"cpu_load": 25.9, "mem": 6172, "storage": 95888, "time": 1646650624}
 header = {'Authorization': f'Basic {client_id}'}
 
@@ -25,12 +23,15 @@ def test_client_data_request_202(api_client, psql):
     assert len(response_json) == 4
     for value in response_json.values():
         assert isinstance(value, (int, float))
-    with open(f'{server_directory}/user_system_load.csv', 'r') as file_data:
-        lines_in_file = file_data.readlines()
-        assert lines_in_file[0].strip() == 'time;cpu;memory;storage'
-        assert lines_in_file[-1].strip() == '1646650624;25.9;6172;95888'
-    os.remove(f'{server_directory}/user_system_load.csv')
+    cur.execute(sql.SQL("""SELECT * FROM {} WHERE time=1646650624""").format(sql.Identifier(user)))
+    db_data = cur.fetchone()
+    assert len(db_data) == 4
+    assert db_data[0] == 25.9
+    assert db_data[1] == 6172.0
+    assert db_data[2] == 95888.0
+    assert db_data[3] == 1646650624
     cur.execute("DELETE FROM clients WHERE username = %s ", params=(user,))
+    cur.execute(sql.SQL("DROP TABLE {}").format(sql.Identifier(user)))
     psql.commit()
 
 
@@ -59,5 +60,6 @@ def test_client_data_request_401(api_client, psql):
     assert response.status_code == 401
     cur = psql.cursor()
     cur.execute("DELETE FROM clients WHERE username = %s ", params=(user,))
+    cur.execute(sql.SQL("DROP TABLE {}").format(sql.Identifier(user)))
     psql.commit()
 

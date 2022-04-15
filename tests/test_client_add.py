@@ -1,17 +1,11 @@
 import base64
 import os
+from psycopg import sql
 
 import pytest
 
-user = 'user'
+user = 'test_user'
 password = 'password'
-raw_directory = os.getcwd().split('/')
-raw_directory.pop(-1)
-server_directory = '/'.join(raw_directory) + '/server'
-try:
-    os.remove(f'{server_directory}/user_system_load.csv')
-except FileNotFoundError:
-    pass
 
 
 def test_client_add_200(api_client, psql):
@@ -28,6 +22,7 @@ def test_client_add_200(api_client, psql):
     assert fetch[0] == user
     assert fetch[1] == uniq_id
     cur.execute("DELETE FROM clients WHERE username = %s ", params=(user,))
+    cur.execute(sql.SQL("DROP TABLE {}").format(sql.Identifier(user)))
     psql.commit()
 
 
@@ -52,6 +47,6 @@ def test_client_error_pass(api_client, psql):
     response = api_client.post(path='/client', json={'username': '', 'pass': password})
     assert response.status_code == 401
     assert response_json == {'Error': 'incorrect username or pass'}
-    os.remove(f'{server_directory}/user_system_load.csv')
     cur.execute("DELETE FROM clients WHERE username = %s ", params=(user,))
+    cur.execute(sql.SQL("DROP TABLE {}").format(sql.Identifier(user)))
     psql.commit()

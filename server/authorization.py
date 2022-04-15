@@ -2,7 +2,6 @@ import base64
 import json
 import logging
 from db import Psql
-import os
 
 db = Psql(username='wood', db_name='clients', password='123', host="database", port=5432)
 
@@ -21,9 +20,6 @@ def add_client(username: str, password: str) -> int:
     uniq_id = base64.b64encode(f'{username}:{password}'.encode())
     uniq_id = uniq_id.decode()
     db.add_client(uniq_id, username=username)
-    path = os.path.dirname(__file__)
-    with open(f'{path}/{username}_system_load.csv', 'w', encoding='utf-8') as file:
-        file.write('time;cpu;memory;storage\n')
     return uniq_id
 
 
