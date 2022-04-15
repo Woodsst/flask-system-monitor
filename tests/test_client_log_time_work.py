@@ -1,17 +1,7 @@
-import base64
-
 import pytest
 
-import os
-
 from psycopg import sql
-
-user = 'test_user'
-password = 'password'
-client_id = base64.b64encode(f'{user}:{password}'.encode()).decode()
-data = {"cpu_load": 25.9, "mem": 6172, "storage": 95888, "time": 1646650624}
-data_2 = {"cpu_load": 20.9, "mem": 6272, "storage": 95838, "time": 1646650625}
-header = {'Authorization': f'Basic {client_id}'}
+from client_data import header, client_id, password, user, data, data_2
 
 
 def test_client_log_time_work(api_client, psql):

@@ -1,6 +1,7 @@
 import json
 
-from client import WebSocketRequests as ws_request, WebSocketResponse as ws_respose
+from client import WebSocketResponse as ws_respose
+from client_data import WebSocketRequests as ws_request
 import pytest
 
 

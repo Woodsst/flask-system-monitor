@@ -1,11 +1,11 @@
 import psycopg
 import pytest
-from client import WebSocketTestClient, BaseHttpApi
+from client import WebSocketTestApi, BaseHttpApi
 
 
 @pytest.fixture(scope='function')
 def ws_api():
-    ws = WebSocketTestClient("localhost", 5000, "/echo")
+    ws = WebSocketTestApi("localhost", 5000, "/echo")
     yield ws
 
 

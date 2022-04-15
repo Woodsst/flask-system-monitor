@@ -1,26 +1,20 @@
-import base64
-import os
 from psycopg import sql
-
+from client_data import user, password, client_id
 import pytest
-
-user = 'test_user'
-password = 'password'
 
 
 def test_client_add_200(api_client, psql):
     cur = psql.cursor()
     response = api_client.post(path='/client', json={'username': user, 'pass': password})
     response_json = response.json()
-    uniq_id = base64.b64encode(f'{user}:{password}'.encode()).decode()
     assert response.status_code == 200
-    assert response_json['client_id'] == uniq_id
+    assert response_json['client_id'] == client_id
     assert response_json['registration'] == user
     assert len(response_json) == 2
     cur.execute('SELECT username, uniq_id FROM clients WHERE username = %s', params=(user,))
     fetch = cur.fetchone()
     assert fetch[0] == user
-    assert fetch[1] == uniq_id
+    assert fetch[1] == client_id
     cur.execute("DELETE FROM clients WHERE username = %s ", params=(user,))
     cur.execute(sql.SQL("DROP TABLE {}").format(sql.Identifier(user)))
     psql.commit()

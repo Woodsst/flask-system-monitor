@@ -1,5 +1,3 @@
-import json
-
 import requests
 import websocket
 from requests import Response
@@ -32,7 +30,7 @@ class BaseHttpApi:
         return requests.put(url, data=data, json=json)
 
 
-class WebSocketTestClient:
+class WebSocketTestApi:
     def __init__(self, host: str, port: int, path: str):
         self.host = host
         self.port = port
@@ -49,27 +47,6 @@ class WebSocketTestClient:
 
     def close(self):
         self.ws.close()
-
-
-class WebSocketRequests:
-    HELLO = json.dumps({"type": "HELLO"})
-    SUBSCRIBE_CPU = json.dumps({"type": "SUBSCRIBE", "request_id": "1", "data": ["CPU"], "interval": "1"}, indent=4)
-    SUBSCRIBE_CPU_INTERVAL_0 = json.dumps({"type": "SUBSCRIBE", "request_id": "1", "data": ["CPU"], "interval": "0"},
-                                          indent=4)
-    SUBSCRIBE_MEM = json.dumps({"type": "SUBSCRIBE", "request_id": "2", "data": ["MEM"], "interval": "1"}, indent=4)
-    SUBSCRIBE_MEM_INTERVAL_0 = json.dumps({"type": "SUBSCRIBE", "request_id": "2", "data": ["MEM"], "interval": "0.3"},
-                                          indent=4)
-    SUBSCRIBE_STORAGE = json.dumps({"type": "SUBSCRIBE", "request_id": "3", "data": ["STORAGE"], "interval": "1"},
-                                   indent=4)
-    SUBSCRIBE_STORAGE_INTERVAL_0 = json.dumps(
-        {"type": "SUBSCRIBE", "request_id": "3", "data": ["STORAGE"], "interval": "0.3"}, indent=4)
-    UNSUBSCRIBE_CPU = json.dumps({"type": "UNSUBSCRIBE", "request_id": "1"}, indent=4)
-    UNSUBSCRIBE_MEM = json.dumps({"type": "UNSUBSCRIBE", "request_id": "2"}, indent=4)
-    UNSUBSCRIBE_STORAGE = json.dumps({"type": "UNSUBSCRIBE", "request_id": "3"}, indent=4)
-    UNSUBSCRIBE_CPU_MEM_STORAGE = json.dumps({"type": "UNSUBSCRIBE", "request_id": "123"}, indent=4)
-    WORK_TIME = json.dumps({"type": "WORK_TIME"})
-    SUBSCRIBE_CPU_MEM_STORAGE = json.dumps(
-        {"type": "SUBSCRIBE", "request_id": "123", "data": ["CPU", "MEM", "STORAGE"], "interval": "1"}, indent=4)
 
 
 class WebSocketResponse:
