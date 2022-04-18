@@ -2,7 +2,6 @@ import json
 
 from client import WebSocketResponse as ws_respose
 from client_data import WebSocketRequests as ws_request
-import pytest
 
 
 def test_hello(ws_api):

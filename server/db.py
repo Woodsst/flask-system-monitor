@@ -1,14 +1,30 @@
 import datetime
+import logging
+import time
 from typing import List
 
 import psycopg
 from psycopg import sql
 
+logger = logging.getLogger(__file__)
+
 
 class Psql:
     def __init__(self, username: str, password: str, db_name: str, host: str, port: str):
-        self.conn = psycopg.connect(dbname=db_name, user=username, password=password, host=host, port=port)
-        self.cursor = self.conn.cursor()
+        timeout = 0.1
+        connect = False
+        while not connect:
+            time.sleep(timeout)
+            try:
+                self.conn = psycopg.connect(dbname=db_name, user=username, password=password, host=host, port=port)
+            except psycopg.OperationalError:
+                timeout += 0.1
+                logger.info('trying connection with database')
+                if timeout > 1:
+                    raise psycopg.OperationalError('connection with database failed')
+                continue
+            connect = True
+            self.cursor = self.conn.cursor()
 
     def commit(self):
         self.conn.commit()

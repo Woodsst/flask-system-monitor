@@ -1,9 +1,20 @@
+import time
+
 import psycopg
 import pytest
 from psycopg import sql
 
 from client import WebSocketTestApi, BaseHttpApi
 from client_data import user
+from server_command import server_run, terminate_server
+
+
+@pytest.fixture(scope='session')
+def server_start():
+    server_run()
+    time.sleep(0.5)
+    yield
+    terminate_server()
 
 
 @pytest.fixture(scope='function')

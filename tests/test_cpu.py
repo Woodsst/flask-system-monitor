@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_cpu_load_200(api_client):
     response = api_client.get('/monitor/cpu/load')
     assert response.status_code == 200, f'{response.status_code}'

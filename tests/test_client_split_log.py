@@ -1,5 +1,3 @@
-import pytest
-
 from client_data import user, password, client_id, data, data_2, data_3, header
 
 

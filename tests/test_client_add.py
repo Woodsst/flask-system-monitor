@@ -1,5 +1,4 @@
 from client_data import user, password, client_id
-import pytest
 
 
 def test_client_add_200(api_client, psql):

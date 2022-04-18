@@ -1,4 +1,3 @@
-import pytest
 from psycopg import sql
 from client_data import client_id, user, password, header, data
 

@@ -1,4 +1,3 @@
-import pytest
 from datatype import DataType
 
 

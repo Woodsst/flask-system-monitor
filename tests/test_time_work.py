@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_work_time_request_200(api_client):
     response = api_client.get('/start_time')
     assert response.status_code == 200, f'{response.status_code}'

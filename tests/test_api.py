@@ -1,7 +1,4 @@
-import pytest
-
-
-def test_api_200(api_client):
+def test_api_200(api_client, server_start):
     response = api_client.get('/api')
     assert response.status_code == 200, f'{response.status_code}'
     response_json = response.json()
@@ -18,4 +15,3 @@ def test_api_405(api_client):
     assert response.status_code == 405, f'{response.status_code}'
     response = api_client.delete('/api')
     assert response.status_code == 405, f'{response.status_code}'
-
