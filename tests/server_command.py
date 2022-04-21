@@ -6,9 +6,9 @@ import psutil
 def terminate_server():
     for i in psutil.process_iter():
         if i.name() == 'python3':
-            if i.cmdline()[1] == '../server/server.py':
+            if i.cmdline()[1] == 'server/server.py':
                 i.terminate()
 
 
 def server_run():
-    os.system("python3 ../server/server.py &")
+    os.popen('sh test_run.sh')

@@ -1,4 +1,4 @@
-def test_api_200(api_client, server_start):
+def test_api_200(api_client, start_server_for_tests):
     response = api_client.get('/api')
     assert response.status_code == 200, f'{response.status_code}'
     response_json = response.json()

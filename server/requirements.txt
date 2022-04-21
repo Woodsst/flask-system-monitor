@@ -7,3 +7,4 @@ Flask-Sockets==0.2.1
 pytest-cov==3.0.0
 psycopg==3.0.11
 psycopg-binary==3.0.11
+pyYAML==6.0

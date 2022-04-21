@@ -5,7 +5,7 @@ def test_cpu_load_200(api_client):
     assert 'load' in response_json
     assert isinstance(response_json['load'], float)
     assert 0.0 < response_json['load']
-    assert 100.0 > response_json['load']
+    assert 100.0 >= response_json['load']
     assert len(response_json) == 1
 
 

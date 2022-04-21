@@ -5,11 +5,11 @@ services:
   ports:
   - "5431:5432"
   environment:
-   POSTGRES_USER: wood
+   POSTGRES_USER: test
    POSTGRES_PASSWORD: 123
-   POSTGRES_DB: clients
+   POSTGRES_DB: test_clients
   volumes:
-    - .:/docker-entrypoint-initdb.d/
+   - ./db.sql:/docker-entrypoint-initdb.d/db.sql
  server:
   build: .
   ports:

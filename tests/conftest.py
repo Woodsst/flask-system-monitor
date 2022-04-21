@@ -2,18 +2,34 @@ import time
 
 import psycopg
 import pytest
+import requests as requests
 from psycopg import sql
 
 from client import WebSocketTestApi, BaseHttpApi
 from client_data import user
-from server_command import server_run, terminate_server
+from server_command import terminate_server, server_run
+from config import Settings
+
+config = Settings()
 
 
 @pytest.fixture(scope='session')
-def server_start():
+def start_server_for_tests(api_client):
+    config.config_for_tests()
     server_run()
-    time.sleep(0.5)
+    timeout = 0.01
+    while True:
+        time.sleep(timeout)
+        try:
+            api_client.get('/api')
+        except requests.exceptions.ConnectionError:
+            timeout += 0.01
+            if timeout > 0.2:
+                return
+            continue
+        break
     yield
+    config.reset_default_config()
     terminate_server()
 
 
@@ -31,7 +47,8 @@ def api_client():
 
 @pytest.fixture(scope='function')
 def psql():
-    conn = psycopg.connect(dbname='clients', user='wood', password='123', host="database", port=5432)
+    conn = psycopg.connect(dbname=config.db_name, user=config.db_username,
+                           password=config.db_password, host=config.db_host, port=config.db_port)
     try:
         yield conn
     finally:

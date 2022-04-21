@@ -2,8 +2,14 @@ import base64
 import json
 import logging
 from db import Psql
+from config import Settings
 
-db = Psql(username='wood', db_name='clients', password='123', host="database", port=5432)
+config = Settings()
+db = Psql(password=config.db_password,
+          host=config.db_host,
+          port=config.db_port,
+          db_name=config.db_name,
+          username=config.db_username)
 
 
 def authorization(username: str, password: str) -> bool or int:
