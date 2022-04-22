@@ -6,15 +6,16 @@ from typing import Union
 from flask import Flask, make_response, request, Response, jsonify
 from flask_sockets import Sockets, Rule
 
-from authorization import user_verification, authorization, error_authorization, add_client, \
-    id_verification, to_json_for_client_data
-from cpu_monitor import cpu_load, cpu_core_info, cpu_frequencies
-from datatype import DataType
+from authorization import Authorization
+from monitoring_utilities.cpu_monitor import cpu_load, cpu_core_info, cpu_frequencies
+from monitoring_utilities.datatype import DataType
 from logger_config import logger_config
-from memory_monitor import memory_info
-from message_handler import WebSocketMessageHandler
-from monitoring import write_client_data, client_log_request, write_server_system_load, service_time, time_write_log
-from storage_monitor import storage_info
+from monitoring_utilities.memory_monitor import memory_info
+from handlers.request_handler import RequestHandler
+from handlers.ws_message_handler import WebSocketMessageHandler
+from handlers.data_handler import ClientDataHandler
+from monitoring_utilities.storage_monitor import storage_info
+from server_state import write_server_system_load, service_time
 
 app = Flask(__name__)
 sockets = Sockets(app)
@@ -29,7 +30,7 @@ def welcome() -> str:
 
 @sockets.route('/echo', websocket=True)
 def echo_socket(ws):
-    handler = WebSocketMessageHandler(ws)
+    handler = WebSocketMessageHandler(ws, auth, data_handler)
     while not ws.closed:
         client_request = handler.receive()
         if client_request is None:
@@ -131,12 +132,12 @@ def route_for_client(client_id) -> Union[tuple[Response, int], tuple[any, int]]:
             return jsonify(''), 401
     except AttributeError:
         return jsonify(''), 401
-    username = id_verification(client)
+    username = auth.id_verification(client)
     if username:
         data = request.form.to_dict()
         if len(data) > 0:
-            write_client_data(data, username)
-            return to_json_for_client_data(data), 202
+            data_handler.write_client_data(data, username)
+            return auth.to_json_for_client_data(data), 202
         logger.info('client - %s incorrect data size', username)
         return jsonify(''), 401
     logger.info('client - %s incorrect client_id', username)
@@ -151,15 +152,15 @@ def client_registration() -> Response or dict:
         return jsonify({'error': 'unsupportable username'}), 401
     if not username[0].isalpha():
         return jsonify({'error': 'unsupportable username'}), 401
-    if user_verification(username):
-        client_id = authorization(username=username, password=password)
+    if auth.user_verification(username):
+        client_id = auth.authorization(username=username, password=password)
         if client_id:
             logger.info('client: %s, authorization', username)
             return jsonify({'client_id': client_id})
-        return error_authorization(request), 401
+        return auth.error_authorization(request), 401
     if username is None or len(username) == 0:
-        return error_authorization(request), 401
-    client_id = add_client(username, password)
+        return auth.error_authorization(request), 401
+    client_id = auth.add_client(username, password)
     logger.info('client: %s, registered', username)
     return jsonify({
         'registration': username,
@@ -169,35 +170,46 @@ def client_registration() -> Response or dict:
 
 @app.route('/client/<client_id>/time', methods=["GET"])
 def client_log_time_work(client_id: str) -> Response:
-    username = id_verification(client_id)
-    if username and user_verification(username):
-        response_js = time_write_log(username)
+    username = auth.id_verification(client_id)
+    if username and auth.user_verification(username):
+        response_js = request_handler.time_write_log(username)
         if response_js.get('error'):
             return response_js
         return response_js, 200
     else:
-        return error_authorization(request), 401
+        return auth.error_authorization(request), 401
 
 
 @app.route('/client/<client_id>/time/report', methods=["GET"])
 def split_client_log(client_id: str) -> Response:
-    username = id_verification(client_id)
-    if username and user_verification(username):
+    username = auth.id_verification(client_id)
+    if username and auth.user_verification(username):
         start = request.args.get('start')
         end = request.args.get('end')
         if (len(end) and len(start)) == 0:
             start = 0
             end = 0
         try:
-            payload = client_log_request(username, int(start), int(end))
+            payload = request_handler.client_log_request(username, int(start), int(end))
         except ValueError:
             return jsonify({'error': 'value error'}), 400
         return payload, 200
-    return error_authorization(request), 401
+    return auth.error_authorization(request), 401
 
 
 if __name__ == "__main__":
     logger_config()
+    from config import Settings
+    from db import Psql
+    config = Settings()
+    db = Psql(password=config.db_password,
+              host=config.db_host,
+              port=config.db_port,
+              db_name=config.db_name,
+              username=config.db_username)
+    auth = Authorization(db)
+    data_handler = ClientDataHandler(db)
+    request_handler = RequestHandler(db)
     server_start = time.strftime('%a, %d %b %Y %H:%M:%S')
     thread_cpu_info = threading.Thread(target=write_server_system_load, daemon=True)
     thread_cpu_info.start()
