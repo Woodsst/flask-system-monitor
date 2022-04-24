@@ -29,7 +29,7 @@ def welcome() -> str:
 
 
 @sockets.route('/echo', websocket=True)
-def echo_socket(ws):
+def echo_socket(ws) -> None:
     handler = WebSocketMessageHandler(ws, auth, data_handler)
     while not ws.closed:
         client_request = handler.receive()
@@ -137,7 +137,7 @@ def route_for_client(client_id) -> Union[tuple[Response, int], tuple[any, int]]:
         data = request.form.to_dict()
         if len(data) > 0:
             data_handler.write_client_data(data, username)
-            return auth.to_json_for_client_data(data), 202
+            return data_handler.to_json_for_client_data(data), 202
         logger.info('client - %s incorrect data size', username)
         return jsonify(''), 401
     logger.info('client - %s incorrect client_id', username)

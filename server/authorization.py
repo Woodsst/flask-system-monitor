@@ -1,5 +1,4 @@
 import base64
-import json
 import logging
 
 from db import Psql
@@ -39,12 +38,3 @@ class Authorization:
 
     def id_verification(self, client_id: str) -> str or bool:
         return self.db.id_verification(client_id)
-
-    @staticmethod
-    def to_json_for_client_data(data: dict):  # TODO replace this method
-        for key, _ in data.items():
-            if key == 'cpu_load':
-                data[key] = float(data[key])
-                continue
-            data[key] = int(data[key])
-        return json.dumps(data)
