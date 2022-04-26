@@ -2,15 +2,13 @@ from client_data import user, password, client_id
 
 
 def test_client_add_200(api_client, psql):
-    cur = psql.cursor()
     response = api_client.post(path='/client', json={'username': user, 'pass': password})
     response_json = response.json()
     assert response.status_code == 200
     assert response_json['client_id'] == client_id
     assert response_json['registration'] == user
     assert len(response_json) == 2
-    cur.execute('SELECT username, uniq_id FROM clients WHERE username = %s', params=(user,))
-    fetch = cur.fetchone()
+    fetch = psql.select_username_uniq_id(user)
     assert fetch[0] == user
     assert fetch[1] == client_id
 
@@ -26,7 +24,7 @@ def test_client_add_405(api_client):
     assert response.status_code == 405
 
 
-def test_client_error_pass(api_client, psql):
+def test_client_error_pass(api_client):
     api_client.post(path='/client', json={'username': user, 'pass': password})
     response = api_client.post(path='/client', json={'username': user, 'pass': 'asd'})
     response_json = response.json()

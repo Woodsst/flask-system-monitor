@@ -1,9 +1,7 @@
 import time
 
-import psycopg
 import pytest
 import requests as requests
-from psycopg import sql
 
 from client import WebSocketTestApi, BaseHttpApi
 from client_data import user
@@ -45,13 +43,13 @@ def api_client():
     yield httpapi
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope='session')
 def psql():
-    conn = psycopg.connect(dbname=config.db_name, user=config.db_username,
+    from db import PostgresClient
+    conn = PostgresClient(dbname=config.db_name, user=config.db_username,
                            password=config.db_password, host=config.db_host, port=config.db_port)
     try:
         yield conn
     finally:
-        conn.cursor().execute("DELETE FROM clients WHERE username = %s ", params=(user,))
-        conn.cursor().execute(sql.SQL("DROP TABLE {}").format(sql.Identifier(user)))
-        conn.commit()
+        conn.delete_username(user)
+        conn.drop_table(user)

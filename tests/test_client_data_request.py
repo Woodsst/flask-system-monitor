@@ -1,9 +1,7 @@
-from psycopg import sql
 from client_data import client_id, user, password, header, data
 
 
 def test_client_data_request_202(api_client, psql):
-    cur = psql.cursor()
     api_client.post(path='/client', json={'username': user, 'pass': password})
     response = api_client.post(f'/client/{client_id}', data=data,
                                  headers=header)
@@ -13,8 +11,7 @@ def test_client_data_request_202(api_client, psql):
     assert len(response_json) == 4
     for value in response_json.values():
         assert isinstance(value, (int, float))
-    cur.execute(sql.SQL("""SELECT * FROM {} WHERE time=1646650624""").format(sql.Identifier(user)))
-    db_data = cur.fetchone()
+    db_data = psql.select_raw_data_for_time(user, '1646650624')
     assert len(db_data) == 4
     assert db_data[0] == 25.9
     assert db_data[1] == 6172.0
@@ -34,7 +31,7 @@ def test_client_data_request_405(api_client):
     assert response.status_code == 405
 
 
-def test_client_data_request_401(api_client, psql):
+def test_client_data_request_401(api_client):
     api_client.post(path='/client', json={'username': user, 'pass': password})
     response = api_client.post(f'/client/{client_id}', data='',
                                  headers=header)
