@@ -59,3 +59,6 @@ class WebSocketResponse:
     UNSUBSCRIBED_STORAGE = '{"type": "UNSUBSCRIBED", "payload": {"request_id": "3"}}'
     SUBSCRIBE_CPU_MEM_STORAGE = '{"type": "SUBSCRIBED", "payload": {"request_id": "123"}}'
     UNSUBSCRIBED_CPU_MEM_STORAGE = '{"type": "UNSUBSCRIBED", "payload": {"request_id": "123"}}'
+    DATA_RETURN_FOR_DATA_1 = '{"type": "DATA_RETURN", "payload": {"data": {"cpu_load": 25.9, "mem": 6172, "storage": 95888, "time": 1646650624}}}'
+    ERROR_DATA_SIZE = "{'type': 'ERROR', 'reason': 'incorrect data size'}"
+    ERROR_DATA_TYPE = '{"type": "ERROR", "reason": "Data type incorrect, please use json"}'

@@ -7,6 +7,7 @@ from client import WebSocketTestApi, BaseHttpApi
 from client_data import user
 from server_command import terminate_server, server_run
 from config import Settings
+from client_data import WSRequestsForServerMonitoring as ws_request
 
 config = Settings()
 
@@ -31,9 +32,11 @@ def start_server_for_tests(api_client):
     terminate_server()
 
 
-@pytest.fixture(scope='function')
-def ws_api():
+@pytest.fixture(scope='session')
+def ws_api(hello: bool = True):
     ws = WebSocketTestApi("localhost", 5000, "/echo")
+    if hello is True:
+        ws.get(ws_request.HELLO)
     yield ws
 
 

@@ -48,7 +48,6 @@ class WebSocketMessageHandler:
         self.websocket = web_socket
         self.client_status = ClientStatus.NOT_AUTHORIZED
         self.event_thread = None
-        self.writhe_data_thread = None
         self.interval = 1
         self.start_time = time.strftime('%a, %d %b %Y %H:%M:%S')
 
@@ -65,6 +64,8 @@ class WebSocketMessageHandler:
             logger.debug('%s - Data type incorrect', message)
             return
         client_request = protocol.MessageBase.deserialize(json_data)
+        if client_request is None:
+            self.websocket.send(json.dumps(protocol.Error.ERROR_DATA_TYPE))
         return client_request
 
     def message_hello(self):
@@ -80,7 +81,6 @@ class WebSocketMessageHandler:
 
     def message_subscribe(self, request: protocol.Subscribe):
         if request.request_id in request_id_numbers:
-            self.client_status = ClientStatus.AUTHORIZED
             self.websocket.send(json.dumps(protocol.Error.ERROR_REQUEST_ID_COLLISION))
         else:
             self.interval = int(request.interval)
@@ -88,7 +88,7 @@ class WebSocketMessageHandler:
             self.client_status = ClientStatus.SUBSCRIBED
             self.websocket.send(str(protocol.Subscribed(request.request_id)))
             logger.info('client subscribe %s', request.request_id)
-            self.event_thread = threading.Thread(target=self.event, args=(request,))
+            self.event_thread = threading.Thread(target=self.event, args=(request,), daemon=True)
             self.event_thread.start()
 
     def message_client_data(self, request: protocol.ClientData):
@@ -101,24 +101,6 @@ class WebSocketMessageHandler:
                 self.websocket.send(str(protocol.Error.ERROR_DATA_SIZE))
                 logger.info('client - %s incorrect data size', username)
 
-    def message_client_registration(self, request: protocol.RegistrationClient):
-        username = request.username
-        password = request.password
-        if self.authorize.user_verification(username):
-            client_id = self.authorize.authorization(username, password)
-            if client_id:
-                self.websocket.send(str(protocol.ExistClient(client_id)))
-                logger.info('client: %s , authorization', username)
-            else:
-                self.websocket.send(str(protocol.Error.ERROR_USERNAME_PASSWORD_INCORRECT))
-        else:
-            if username is None:
-                self.websocket.send(str(protocol.Error.ERROR_USERNAME_PASSWORD_INCORRECT))
-                return
-            client_id = self.authorize.add_client(username, password)
-            self.websocket.send(str(protocol.AddClient(username, client_id)))
-            logger.info('client: %s, registered', username)
-
     def handle(self, request: protocol.MessageBase):
         if request.type == protocol.MessageType.HELLO:
             self.message_hello()
@@ -126,9 +108,6 @@ class WebSocketMessageHandler:
         elif self.client_status != ClientStatus.NOT_AUTHORIZED:
             if request.type == protocol.MessageType.CLIENT_DATA:
                 self.message_client_data(request)
-
-            elif request.type == protocol.MessageType.REGISTRATION_CLIENT:
-                self.message_client_registration(request)
 
             elif request.type == protocol.MessageType.UNSUBSCRIBE:
                 self.message_unsubscribe(request)

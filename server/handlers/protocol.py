@@ -14,8 +14,6 @@ class MessageType(enum.Enum):
     WORK_TIME = 'WORK_TIME'
     CLIENT_DATA = 'CLIENT_DATA'
     DATA_RETURN = 'DATA_RETURN'
-    REGISTRATION_CLIENT = 'REGISTRATION_CLIENT'
-    ADD_CLIENT = 'ADD_CLIENT'
     EXIST_CLIENT = 'EXIST_CLIENT'
 
 
@@ -25,6 +23,8 @@ class MessageBase:
     @classmethod
     def deserialize(cls, data):
         raw_message_type = data.get('type')
+        if raw_message_type is None:
+            return
         message_type = MessageType(raw_message_type)
         message_cls = message_cls_map.get(message_type)
         message_data = data.get('data')
@@ -133,26 +133,10 @@ class DataReturn(MessageBase):
         self.data = data
 
 
-class RegistrationClient(MessageBase):
-    type: MessageType = MessageType.REGISTRATION_CLIENT
-
-    def __init__(self, username: str, password: str):
-        self.username = username
-        self.password = password
-
-
 class ExistClient(MessageBase):
     type: MessageType = MessageType.EXIST_CLIENT
 
     def __init__(self, client_id: str):
-        self.client_id = client_id
-
-
-class AddClient(MessageBase):
-    type: MessageType = MessageType.ADD_CLIENT
-
-    def __init__(self, username: str, client_id: str):
-        self.username = username
         self.client_id = client_id
 
 
@@ -185,8 +169,6 @@ message_cls_map = {
     MessageType.WORK_TIME: WorkTime,
     MessageType.CLIENT_DATA: ClientData,
     MessageType.DATA_RETURN: DataReturn,
-    MessageType.REGISTRATION_CLIENT: RegistrationClient,
     MessageType.EXIST_CLIENT: ExistClient,
-    MessageType.ADD_CLIENT: AddClient
 
 }

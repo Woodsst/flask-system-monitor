@@ -1,18 +1,15 @@
 import json
 
 from client import WebSocketResponse as ws_respose
-from client_data import WebSocketRequests as ws_request
+from client_data import WSRequestsForServerMonitoring as ws_request
 
 
 def test_hello(ws_api):
-    ws_api.get(ws_request.HELLO)
     assert ws_api.recv() == ws_respose.WELCOME
 
 
 def test_subscribe_unsubscribe_cpu(ws_api):
-    ws_api.get(ws_request.HELLO)
     ws_api.get(ws_request.SUBSCRIBE_CPU)
-    assert ws_api.recv() == ws_respose.WELCOME
     assert ws_api.recv() == ws_respose.SUBSCRIBE_CPU
     response_js = json.loads(ws_api.recv())
     assert response_js['type'] == 'EVENT'
@@ -22,9 +19,7 @@ def test_subscribe_unsubscribe_cpu(ws_api):
 
 
 def test_subscribe_unsubscribe_mem(ws_api):
-    ws_api.get(ws_request.HELLO)
     ws_api.get(ws_request.SUBSCRIBE_MEM)
-    assert ws_api.recv() == ws_respose.WELCOME
     assert ws_api.recv() == ws_respose.SUBSCRIBE_MEM
     response_js = json.loads(ws_api.recv())
     assert response_js['type'] == 'EVENT'
@@ -37,9 +32,7 @@ def test_subscribe_unsubscribe_mem(ws_api):
 
 
 def test_subscribe_unsubscribe_storage(ws_api):
-    ws_api.get(ws_request.HELLO)
     ws_api.get(ws_request.SUBSCRIBE_STORAGE)
-    assert ws_api.recv() == ws_respose.WELCOME
     assert ws_api.recv() == ws_respose.SUBSCRIBE_STORAGE
     response_js = json.loads(ws_api.recv())
     assert response_js['type'] == 'EVENT'
@@ -52,9 +45,7 @@ def test_subscribe_unsubscribe_storage(ws_api):
 
 
 def test_subscribe_unsubscribe_cpu_mem_storage(ws_api):
-    ws_api.get(ws_request.HELLO)
     ws_api.get(ws_request.SUBSCRIBE_CPU_MEM_STORAGE)
-    assert ws_api.recv() == ws_respose.WELCOME
     assert ws_api.recv() == ws_respose.SUBSCRIBE_CPU_MEM_STORAGE
     response_js = json.loads(ws_api.recv())
     assert response_js['type'] == 'EVENT'
@@ -71,11 +62,35 @@ def test_subscribe_unsubscribe_cpu_mem_storage(ws_api):
 
 
 def test_work_time(ws_api):
-    ws_api.get(ws_request.HELLO)
     ws_api.get(ws_request.WORK_TIME)
-    assert ws_api.recv() == ws_respose.WELCOME
     response_js = json.loads(ws_api.recv())
     assert response_js['type'] == 'WORK_TIME'
     assert len(response_js['payload']) == 2
     assert isinstance(response_js['payload']['start_work'], str)
     assert isinstance(response_js['payload']['actual_time'], str)
+
+
+def test_error_data_type(ws_api):
+    ws_api.get(ws_request.INCORRECT_DATA_TYPE)
+    request = ws_api.recv()
+    assert isinstance(request, str)
+    assert len(request) > 0
+    assert request == ws_respose.ERROR_DATA_TYPE
+
+
+def test_json_decode_error(ws_api):
+    ws_api.get(ws_request.INCORRECT_JSON)
+    request = ws_api.recv()
+    assert isinstance(request, str)
+    assert len(request) > 0
+    assert request == ws_respose.ERROR_DATA_TYPE
+
+
+def test_data_type_error_in_handle():
+    from client import WebSocketTestApi
+    ws_api = WebSocketTestApi("localhost", 5000, "/echo")
+    ws_api.get(ws_request.WELCOME)
+    request = ws_api.recv()
+    assert isinstance(request, str)
+    assert len(request) > 0
+    assert request == ws_respose.ERROR_DATA_TYPE

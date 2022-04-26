@@ -124,7 +124,7 @@ def start_time() -> Response or dict:
     return service_time(server_start)
 
 
-@app.route('/client/<client_id>', methods=['POST'])
+@app.route('/client/<string:client_id>', methods=['POST'])
 def route_for_client(client_id) -> Union[tuple[Response, int], tuple[any, int]]:
     try:
         client = request.headers.get('Authorization').split(' ')[-1]
@@ -168,7 +168,7 @@ def client_registration() -> Response or dict:
     })
 
 
-@app.route('/client/<client_id>/time', methods=["GET"])
+@app.route('/client/<string:client_id>/time', methods=["GET"])
 def client_log_time_work(client_id: str) -> Response:
     username = auth.id_verification(client_id)
     if username and auth.user_verification(username):
@@ -180,7 +180,7 @@ def client_log_time_work(client_id: str) -> Response:
         return auth.error_authorization(request), 401
 
 
-@app.route('/client/<client_id>/time/report', methods=["GET"])
+@app.route('/client/<string:client_id>/time/report', methods=["GET"])
 def split_client_log(client_id: str) -> Response:
     username = auth.id_verification(client_id)
     if username and auth.user_verification(username):
