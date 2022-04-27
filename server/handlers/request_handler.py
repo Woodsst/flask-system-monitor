@@ -25,6 +25,8 @@ class RequestHandler:
 
     def time_write_log(self, username: str) -> dict:
         raw_time = self.db.log_write_time(username)
+        if (raw_time[0] and raw_time[1]) is None:
+            return {"error": "log is empty"}
         return {
             "start": raw_time[0],
             "end": raw_time[1]

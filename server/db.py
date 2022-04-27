@@ -11,20 +11,25 @@ logger = logging.getLogger(__file__)
 
 class Psql:
     def __init__(self, username: str, password: str, db_name: str, host: str, port: str):
+            self.conn = self.__connect(db_name, username, password, host, port)
+            self.cursor = self.conn.cursor()
+
+    @staticmethod
+    def __connect(db_name, username, password, host, port):
         timeout = 0.1
         connect = False
         while not connect:
             time.sleep(timeout)
             try:
-                self.conn = psycopg.connect(dbname=db_name, user=username, password=password, host=host, port=port)
+                conn = psycopg.connect(dbname=db_name, user=username, password=password, host=host, port=port)
             except psycopg.OperationalError:
                 timeout += 0.1
                 logger.info('trying connection with database')
-                if timeout > 1:
+                if timeout > 0.5:
                     raise psycopg.OperationalError('connection with database failed')
                 continue
             connect = True
-            self.cursor = self.conn.cursor()
+        return conn
 
     def commit(self):
         self.conn.commit()
@@ -58,7 +63,10 @@ class Psql:
 
     def id_verification(self, client_id: str) -> str or bool:
         self.cursor.execute("SELECT uniq_id, username FROM clients WHERE uniq_id = %s", (client_id,))
-        client_id_in_base, username = self.cursor.fetchone()
+        fetch = self.cursor.fetchone()
+        if fetch is None:
+            return
+        client_id_in_base, username = fetch
         if client_id is not None and client_id == client_id_in_base:
             self.commit()
             return username

@@ -20,6 +20,11 @@ def test_storage_info_405(api_client):
         assert response_for_units.status_code == 405
 
 
+def test_storage_info_400(api_client):
+    response = api_client.get('/monitor/storage/info?units=bad_units')
+    assert response.status_code == 400
+
+
 def test_storage_total_200(api_client):
     response = api_client.get('/monitor/storage/total')
     assert response.status_code == 200, f'{response.status_code}'
@@ -38,4 +43,9 @@ def test_storage_total_405(api_client):
     for units in DataType:
         response_for_units = api_client.post(f'/monitor/storage/total?{units.value}')
         assert response_for_units.status_code == 405
+
+
+def test_storage_total_400(api_client):
+    response = api_client.get('/monitor/storage/total?units=bad_units')
+    assert response.status_code == 400
 

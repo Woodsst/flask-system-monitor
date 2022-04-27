@@ -129,9 +129,9 @@ def route_for_client(client_id) -> Union[tuple[Response, int], tuple[any, int]]:
     try:
         client = request.headers.get('Authorization').split(' ')[-1]
         if client != client_id:
-            return jsonify(''), 401
+            return make_response("authorization error", 401)
     except AttributeError:
-        return jsonify(''), 401
+        return make_response("authorization error", 401)
     username = auth.id_verification(client)
     if username:
         data = request.form.to_dict()
@@ -139,16 +139,14 @@ def route_for_client(client_id) -> Union[tuple[Response, int], tuple[any, int]]:
             data_handler.write_client_data(data, username)
             return data_handler.to_json_for_client_data(data), 202
         logger.info('client - %s incorrect data size', username)
-        return jsonify(''), 401
-    logger.info('client - %s incorrect client_id', username)
-    return jsonify(''), 401
+        return make_response("Incorrect data size", 400)
 
 
 @app.route('/client', methods=['POST'])
 def client_registration() -> Response or dict:
     username = request.get_json()['username']
     password = request.get_json()['pass']
-    if len(username) == 0:
+    if username is None or len(username) == 0:
         return jsonify({'error': 'unsupportable username'}), 401
     if not username[0].isalpha():
         return jsonify({'error': 'unsupportable username'}), 401
@@ -157,8 +155,6 @@ def client_registration() -> Response or dict:
         if client_id:
             logger.info('client: %s, authorization', username)
             return jsonify({'client_id': client_id})
-        return auth.error_authorization(request), 401
-    if username is None or len(username) == 0:
         return auth.error_authorization(request), 401
     client_id = auth.add_client(username, password)
     logger.info('client: %s, registered', username)
@@ -174,7 +170,7 @@ def client_log_time_work(client_id: str) -> Response:
     if username and auth.user_verification(username):
         response_js = request_handler.time_write_log(username)
         if response_js.get('error'):
-            return response_js
+            return jsonify(response_js), 406
         return response_js, 200
     else:
         return auth.error_authorization(request), 401
@@ -184,8 +180,8 @@ def client_log_time_work(client_id: str) -> Response:
 def split_client_log(client_id: str) -> Response:
     username = auth.id_verification(client_id)
     if username and auth.user_verification(username):
-        start = request.args.get('start')
-        end = request.args.get('end')
+        start = request.args.get('start', '')
+        end = request.args.get('end', '')
         if (len(end) and len(start)) == 0:
             start = 0
             end = 0

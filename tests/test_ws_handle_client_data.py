@@ -15,4 +15,3 @@ def test_error_get_client_data(ws_api):
     response = ws_api.recv()
     assert isinstance(response, str)
     assert response == server_response.ERROR_DATA_SIZE
-

@@ -14,7 +14,6 @@ class MessageType(enum.Enum):
     WORK_TIME = 'WORK_TIME'
     CLIENT_DATA = 'CLIENT_DATA'
     DATA_RETURN = 'DATA_RETURN'
-    EXIST_CLIENT = 'EXIST_CLIENT'
 
 
 class MessageBase:
@@ -30,11 +29,7 @@ class MessageBase:
         message_data = data.get('data')
         request_id = data.get('request_id')
         interval = data.get('interval')
-        username = data.get('username')
-        password = data.get('password')
         client_id = data.get('client_id')
-        if username is not None:
-            return message_cls(username=username, password=password)
         if message_data is not None and isinstance(message_data, (int, float, dict)):
             return message_cls(message_data, interval, client_id)
         if message_data is not None and len(message_data) != 0:
@@ -56,9 +51,6 @@ class MessageBase:
 
 class Hello(MessageBase):
     type: MessageType = MessageType.HELLO
-
-    def __init__(self, client_message: str):
-        self.msg = client_message
 
 
 class Welcome(MessageBase):
@@ -133,13 +125,6 @@ class DataReturn(MessageBase):
         self.data = data
 
 
-class ExistClient(MessageBase):
-    type: MessageType = MessageType.EXIST_CLIENT
-
-    def __init__(self, client_id: str):
-        self.client_id = client_id
-
-
 class Error(MessageBase):
     type: MessageType = MessageType.ERROR
 
@@ -169,6 +154,5 @@ message_cls_map = {
     MessageType.WORK_TIME: WorkTime,
     MessageType.CLIENT_DATA: ClientData,
     MessageType.DATA_RETURN: DataReturn,
-    MessageType.EXIST_CLIENT: ExistClient,
 
 }

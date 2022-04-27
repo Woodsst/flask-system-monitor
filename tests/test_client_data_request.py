@@ -35,7 +35,7 @@ def test_client_data_request_401(api_client):
     api_client.post(path='/client', json={'username': user, 'pass': password})
     response = api_client.post(f'/client/{client_id}', data='',
                                  headers=header)
-    assert response.status_code == 401
+    assert response.status_code == 400
     response = api_client.post(f'/client/{client_id}', data=data,
                                headers={'Authorization': f'Basic afgjn123'})
     assert response.status_code == 401
