@@ -14,3 +14,7 @@ if use docker-compose - data base deployed with server
 
 ## PostgreSQL
 * version 12+
+
+## Test GUI client
+
+https://github.com/Woodsst/system-monitor-client
