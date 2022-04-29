@@ -54,10 +54,11 @@ class Psql:
         self.commit()
 
     def verification_user(self, user_name: str) -> bool:
-        self.cursor.execute("SELECT username FROM clients WHERE username = %s", (user_name,))
-        if self.cursor.fetchone() is not None:
+        self.cursor.execute("SELECT uniq_id FROM clients WHERE username = %s", (user_name,))
+        client_id = self.cursor.fetchone()
+        if client_id is not None:
             self.commit()
-            return user_name
+            return client_id[0]
         self.commit()
         return False
 

@@ -38,3 +38,8 @@ class Authorization:
 
     def id_verification(self, client_id: str) -> str or bool:
         return self.db.id_verification(client_id)
+
+    def verification(self, client_id: str, username: str) -> bool:
+        if self.user_verification(username) == client_id:
+            return True
+        return False

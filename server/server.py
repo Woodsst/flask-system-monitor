@@ -124,22 +124,17 @@ def start_time() -> Response or dict:
     return service_time(server_start)
 
 
-@app.route('/client/<string:client_id>', methods=['POST'])
-def route_for_client(client_id) -> Union[tuple[Response, int], tuple[any, int]]:
-    try:
-        client = request.headers.get('Authorization').split(' ')[-1]
-        if client != client_id:
-            return make_response("authorization error", 401)
-    except AttributeError:
-        return make_response("authorization error", 401)
-    username = auth.id_verification(client)
-    if username:
+@app.route('/client/<string:username>', methods=['POST'])
+def route_for_client(username) -> Union[tuple[Response, int], tuple[any, int]]:
+    if auth.verification(request.headers.get('Authorization'), username):
         data = request.form.to_dict()
         if len(data) > 0:
             data_handler.write_client_data(data, username)
             return data_handler.to_json_for_client_data(data), 202
         logger.info('client - %s incorrect data size', username)
-        return make_response("Incorrect data size", 400)
+        return jsonify({'error': 'incorrect data size'}), 400
+    else:
+        return jsonify(auth.error_authorization(request)), 401
 
 
 @app.route('/client', methods=['POST'])
@@ -164,22 +159,19 @@ def client_registration() -> Response or dict:
     })
 
 
-@app.route('/client/<string:client_id>/time', methods=["GET"])
-def client_log_time_work(client_id: str) -> Response:
-    username = auth.id_verification(client_id)
-    if username and auth.user_verification(username):
+@app.route('/client/<string:username>/time', methods=["POST"])
+def client_log_time_work(username: str) -> Response:
+    if auth.verification(request.headers.get('Authorization'), username):
         response_js = request_handler.time_write_log(username)
         if response_js.get('error'):
             return jsonify(response_js), 406
-        return response_js, 200
-    else:
-        return auth.error_authorization(request), 401
+        return jsonify(response_js), 200
+    return auth.error_authorization(request), 401
 
 
-@app.route('/client/<string:client_id>/time/report', methods=["GET"])
-def split_client_log(client_id: str) -> Response:
-    username = auth.id_verification(client_id)
-    if username and auth.user_verification(username):
+@app.route('/client/<string:username>/time/report', methods=["POST"])
+def split_client_log(username: str) -> Response:
+    if auth.verification(request.headers.get('Authorization'), username):
         start = request.args.get('start', '')
         end = request.args.get('end', '')
         if (len(end) and len(start)) == 0:
