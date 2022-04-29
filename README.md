@@ -6,16 +6,16 @@ Clients information storage in PostgreSQL.
 
 ## Requariments
 * python 3.9
-* websocket-client==1.2.3
-* future~=0.18.2  
-* requests~=2.25.1
-* psutil~=5.9.0
-* Flask==2.0.3
-* Flask-Sockets==0.2.1
-* pytest-cov==3.0.0
-* psycopg==3.0.11
-* psycopg-binary==3.0.11
-* pyYAML==6.0
+* websocket-client
+* future
+* requests
+* psutil
+* Flask
+* Flask-Sockets
+* pytest-cov
+* psycopg
+* psycopg-binary
+* pyYAML
 * all requariments in server/requariments.txt
 
 ## PostgreSQL
@@ -65,7 +65,7 @@ second - transfer data in websocket
 server take your data from POST method and write in database
 for example:
 ```
-url: http://localhost:5000/client/d29vZDoxMjM=
+url: http://localhost:5000/client/wood
 Headers: Authorization: d29vZDoxMjM=
 Data: {
   "cpu_load": 25.9,
@@ -78,7 +78,7 @@ that request write data in database
 
 and if we want, we send request for response about log write work time
 ```
-localhost:5000/client/d29vZDoxMjM=/time
+localhost:5000/client/wood/time
 ```
 server returned json with start and end work time log write
 ```
@@ -90,7 +90,7 @@ server returned json with start and end work time log write
 
 if we need create log slice for specific time
 ```
-url: localhost:5000/client/d29vZDoxMjM=/time/report?start=1651155333&end=1651155431
+url: localhost:5000/client/wood/time/report?start=1651155333&end=1651155431
 ```
 and server return:
 ```
