@@ -20,8 +20,11 @@ def test_split_log_empty_start_end(api_client):
     assert len(response_json['payload']) == 3
 
 
-def test_split_log_for_bad_arguments(api_client):
+def test_split_log_for_errors(api_client):
     response = api_client.post(path=f'/client/{user}/time/report?start=badargument&end=badargumenttwo', headers=header)
     response_json = response.json()
     assert response.status_code == 400
     assert response_json == {'error': 'value error'}
+    response = api_client.post(f'/client/other_client/time/report?start=&end=', headers={"Authorization": 'bad client id'})
+    assert response.status_code == 401
+    assert response.json() == {'error': 'authorization error'}

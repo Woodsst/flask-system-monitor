@@ -19,3 +19,6 @@ def test_client_log_time_work_error(api_client):
     response = api_client.post(f'/client/other_client/time', headers={"Authorization": client_id})
     assert response.status_code == 406
     assert response.json() == {"error": "log is empty"}
+    response = api_client.post(f'/client/other_client/time', headers={"Authorization": 'bad client id'})
+    assert response.status_code == 401
+    assert response.json() == {'error': 'authorization error'}

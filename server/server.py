@@ -131,10 +131,10 @@ def route_for_client(username) -> Union[tuple[Response, int], tuple[any, int]]:
         if len(data) > 0:
             data_handler.write_client_data(data, username)
             return data_handler.to_json_for_client_data(data), 202
-        logger.info('client - %s incorrect data size', username)
+        app.logger.info('client - %s incorrect data size', username)
         return jsonify({'error': 'incorrect data size'}), 400
-    else:
-        return jsonify(auth.error_authorization(request)), 401
+    app.logger.info('authorization error %s', username)
+    return jsonify({'error': 'authorization error'}), 401
 
 
 @app.route('/client', methods=['POST'])
@@ -150,7 +150,7 @@ def client_registration() -> Response or dict:
         if client_id:
             logger.info('client: %s, authorization', username)
             return jsonify({'client_id': client_id})
-        return auth.error_authorization(request), 401
+        return jsonify({'error': 'authorization error'}), 401
     client_id = auth.add_client(username, password)
     logger.info('client: %s, registered', username)
     return jsonify({
@@ -166,7 +166,7 @@ def client_log_time_work(username: str) -> Response:
         if response_js.get('error'):
             return jsonify(response_js), 406
         return jsonify(response_js), 200
-    return auth.error_authorization(request), 401
+    return jsonify({'error': 'authorization error'}), 401
 
 
 @app.route('/client/<string:username>/time/report', methods=["POST"])
@@ -182,7 +182,7 @@ def split_client_log(username: str) -> Response:
         except ValueError:
             return jsonify({'error': 'value error'}), 400
         return payload, 200
-    return auth.error_authorization(request), 401
+    return jsonify({'error': 'authorization error'}), 401
 
 
 if __name__ == "__main__":

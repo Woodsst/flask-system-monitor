@@ -29,10 +29,10 @@ def test_client_error_pass(api_client):
     response = api_client.post(path='/client', json={'username': user, 'pass': 'asd'})
     response_json = response.json()
     assert response.status_code == 401
-    assert response_json == {'Error': 'incorrect username or pass'}
+    assert response_json == {'error': 'authorization error'}
     response = api_client.post(path='/client', json={'username': '', 'pass': password})
     assert response.status_code == 401
-    assert response_json == {'Error': 'incorrect username or pass'}
+    assert response_json == {'error': 'authorization error'}
 
 
 def test_client_username_validation(api_client):

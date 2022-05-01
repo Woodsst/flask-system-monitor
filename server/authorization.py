@@ -29,13 +29,6 @@ class Authorization:
     def user_verification(self, user_name: str) -> bool:
         return self.db.verification_user(user_name)
 
-    @staticmethod
-    def error_authorization(request) -> dict:
-        logging.info('%s - incorrect username or pass', request.get_json())
-        return {
-            'Error': 'incorrect username or pass'
-        }
-
     def id_verification(self, client_id: str) -> str or bool:
         return self.db.id_verification(client_id)
 
