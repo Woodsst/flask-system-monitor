@@ -30,6 +30,8 @@ def welcome() -> str:
 
 @sockets.route('/echo', websocket=True)
 def echo_socket(ws) -> None:
+    """Open and handle websocket connections"""
+
     handler = WebSocketMessageHandler(ws, auth, data_handler)
     while not ws.closed:
         client_request = handler.receive()
@@ -40,6 +42,8 @@ def echo_socket(ws) -> None:
 
 @app.route('/api')
 def api_info() -> dict:
+    """api version route"""
+
     return {
         'name': 'system monitor',
         'version': '0.0.1',
@@ -48,6 +52,8 @@ def api_info() -> dict:
 
 @app.route('/monitor/cpu/load')
 def processor_load() -> dict:
+    """Route to return the server cpu loading"""
+
     interval = request.args.get('interval', 0)
     return {
         'load': cpu_load(float(interval)),
@@ -56,6 +62,8 @@ def processor_load() -> dict:
 
 @app.route('/monitor/cpu/info')
 def cpu_cores() -> dict:
+    """Route to return the server cpu core info"""
+
     physical = cpu_core_info(logical=False)
     logical = cpu_core_info(logical=True)
     frequency = cpu_frequencies()
@@ -68,6 +76,8 @@ def cpu_cores() -> dict:
 
 @app.route('/monitor/memory/info')
 def memory_all_info() -> Response or dict:
+    """Route to return the server load memory info"""
+
     raw_units = request.args.get('units', "GB")
     try:
         units = DataType(raw_units)
@@ -78,6 +88,8 @@ def memory_all_info() -> Response or dict:
 
 @app.route('/monitor/memory/total')
 def memory_total() -> Response or dict:
+    """Route to return the server all memory info"""
+
     raw_units = request.args.get('units', "GB")
     try:
         units = DataType(raw_units)
@@ -91,6 +103,8 @@ def memory_total() -> Response or dict:
 
 @app.route('/monitor/storage/info')
 def storage_all_info() -> Response or dict:
+    """Route to return the server load storage info"""
+
     raw_units = request.args.get('units', 'GB')
     try:
         units = DataType(raw_units)
@@ -107,6 +121,8 @@ def storage_all_info() -> Response or dict:
 
 @app.route('/monitor/storage/total')
 def storage_total() -> Response or dict:
+    """Route to return the server all storage info"""
+
     raw_units = request.args.get('units', 'GB')
     try:
         units = DataType(raw_units)
@@ -121,11 +137,15 @@ def storage_total() -> Response or dict:
 
 @app.route('/start_time')
 def start_time() -> Response or dict:
+    """Route ro return the server work time"""
+
     return service_time(server_start)
 
 
 @app.route('/client/<string:username>', methods=['POST'])
 def route_for_client(username) -> Union[tuple[Response, int], tuple[any, int]]:
+    """Route to POST request for added client data in database and return"""
+
     if auth.verification(request.headers.get('Authorization'), username):
         data = request.form.to_dict()
         if len(data) > 0:
@@ -139,6 +159,8 @@ def route_for_client(username) -> Union[tuple[Response, int], tuple[any, int]]:
 
 @app.route('/client', methods=['POST'])
 def client_registration() -> Response or dict:
+    """Route to POST request for login, if the client is not registered, it registers"""
+
     username = request.get_json()['username']
     password = request.get_json()['pass']
     if username is None or len(username) == 0:
@@ -161,6 +183,8 @@ def client_registration() -> Response or dict:
 
 @app.route('/client/<string:username>/time', methods=["POST"])
 def client_log_time_work(username: str) -> Response:
+    """Route to request for return logging time work"""
+
     if auth.verification(request.headers.get('Authorization'), username):
         response_js = request_handler.time_write_log(username)
         if response_js.get('error'):
@@ -171,6 +195,8 @@ def client_log_time_work(username: str) -> Response:
 
 @app.route('/client/<string:username>/time/report', methods=["POST"])
 def split_client_log(username: str) -> Response:
+    """Route to request for return log slice"""
+
     if auth.verification(request.headers.get('Authorization'), username):
         start = request.args.get('start', '')
         end = request.args.get('end', '')
