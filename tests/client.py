@@ -35,7 +35,7 @@ class WebSocketTestApi:
         self.host = host
         self.port = port
         self.path = path
-        self.url = f'ws://{self.host}:{self.port}{self.path}'
+        self.url = f"ws://{self.host}:{self.port}{self.path}"
         self.ws = websocket.WebSocket()
         self.ws.connect(self.url)
 
@@ -52,13 +52,31 @@ class WebSocketTestApi:
 class WebSocketResponse:
     WELCOME = '{"type": "WELCOME", "payload": {"welcome": "WELCOME"}}'
     SUBSCRIBE_CPU = '{"type": "SUBSCRIBED", "payload": {"request_id": "1"}}'
-    UNSUBSCRIBED_CPU = '{"type": "UNSUBSCRIBED", "payload": {"request_id": "1"}}'
+    UNSUBSCRIBED_CPU = (
+        '{"type": "UNSUBSCRIBED", "payload": {"request_id": "1"}}'
+    )
     SUBSCRIBE_MEM = '{"type": "SUBSCRIBED", "payload": {"request_id": "2"}}'
-    UNSUBSCRIBED_MEM = '{"type": "UNSUBSCRIBED", "payload": {"request_id": "2"}}'
-    SUBSCRIBE_STORAGE = '{"type": "SUBSCRIBED", "payload": {"request_id": "3"}}'
-    UNSUBSCRIBED_STORAGE = '{"type": "UNSUBSCRIBED", "payload": {"request_id": "3"}}'
-    SUBSCRIBE_CPU_MEM_STORAGE = '{"type": "SUBSCRIBED", "payload": {"request_id": "123"}}'
-    UNSUBSCRIBED_CPU_MEM_STORAGE = '{"type": "UNSUBSCRIBED", "payload": {"request_id": "123"}}'
-    DATA_RETURN_FOR_DATA_1 = '{"type": "DATA_RETURN", "payload": {"data": {"cpu_load": 25.9, "mem": 6172, "storage": 95888, "time": 1646650624}}}'
+    UNSUBSCRIBED_MEM = (
+        '{"type": "UNSUBSCRIBED", "payload": {"request_id": "2"}}'
+    )
+    SUBSCRIBE_STORAGE = (
+        '{"type": "SUBSCRIBED", "payload": {"request_id": "3"}}'
+    )
+    UNSUBSCRIBED_STORAGE = (
+        '{"type": "UNSUBSCRIBED", "payload": {"request_id": "3"}}'
+    )
+    SUBSCRIBE_CPU_MEM_STORAGE = (
+        '{"type": "SUBSCRIBED", "payload": {"request_id": "123"}}'
+    )
+    UNSUBSCRIBED_CPU_MEM_STORAGE = (
+        '{"type": "UNSUBSCRIBED", "payload": {"request_id": "123"}}'
+    )
+    DATA_RETURN_FOR_DATA_1 = (
+        '{"type": "DATA_RETURN", "payload": '
+        '{"data": {"cpu_load": 25.9, "mem": 6172, '
+        '"storage": 95888, "time": 1646650624}}}'
+    )
     ERROR_DATA_SIZE = "{'type': 'ERROR', 'reason': 'incorrect data size'}"
-    ERROR_DATA_TYPE = '{"type": "ERROR", "reason": "Data type incorrect, please use json"}'
+    ERROR_DATA_TYPE = (
+        '{"type": "ERROR", "reason": "Data type incorrect, please use json"}'
+    )

@@ -18,16 +18,13 @@ class RequestHandler:
     def payload_formatting(data: List[tuple]) -> dict:
         payload = []
         for cpu, mem, storage, unix_time in data:
-            payload.append(dict(cpu=cpu, mem=mem, storage=storage, unix_time=unix_time))
-        return {
-            'payload': payload
-        }
+            payload.append(
+                dict(cpu=cpu, mem=mem, storage=storage, unix_time=unix_time)
+            )
+        return {"payload": payload}
 
     def time_write_log(self, username: str) -> dict:
         raw_time = self.db.log_write_time(username)
         if (raw_time[0] and raw_time[1]) is None:
             return {"error": "log is empty"}
-        return {
-            "start": raw_time[0],
-            "end": raw_time[1]
-        }
+        return {"start": raw_time[0], "end": raw_time[1]}

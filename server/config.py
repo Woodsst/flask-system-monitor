@@ -3,15 +3,15 @@ import os
 import yaml
 
 raw_path = os.path.dirname(__file__)
-raw_path = raw_path.split('/')
+raw_path = raw_path.split("/")
 raw_path.pop(-1)
-raw_path.append('config_for_github.yml')
-path = '/'.join(raw_path)
+raw_path.append("config_for_github.yml")
+path = "/".join(raw_path)
 
 
 class Settings:
     def __init__(self):
-        with open(path, 'r') as conf:
+        with open(path, "r") as conf:
             yaml_file = yaml.safe_load(conf)
             self.db_name = yaml_file["db_name"]
             self.db_username = yaml_file["db_username"]

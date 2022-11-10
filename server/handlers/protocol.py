@@ -3,17 +3,17 @@ import json
 
 
 class MessageType(enum.Enum):
-    HELLO = 'HELLO'
-    WELCOME = 'WELCOME'
-    SUBSCRIBE = 'SUBSCRIBE'
-    SUBSCRIBED = 'SUBSCRIBED'
-    UNSUBSCRIBE = 'UNSUBSCRIBE'
-    UNSUBSCRIBED = 'UNSUBSCRIBED'
-    EVENT = 'EVENT'
-    ERROR = 'ERROR'
-    WORK_TIME = 'WORK_TIME'
-    CLIENT_DATA = 'CLIENT_DATA'
-    DATA_RETURN = 'DATA_RETURN'
+    HELLO = "HELLO"
+    WELCOME = "WELCOME"
+    SUBSCRIBE = "SUBSCRIBE"
+    SUBSCRIBED = "SUBSCRIBED"
+    UNSUBSCRIBE = "UNSUBSCRIBE"
+    UNSUBSCRIBED = "UNSUBSCRIBED"
+    EVENT = "EVENT"
+    ERROR = "ERROR"
+    WORK_TIME = "WORK_TIME"
+    CLIENT_DATA = "CLIENT_DATA"
+    DATA_RETURN = "DATA_RETURN"
 
 
 class MessageBase:
@@ -21,16 +21,18 @@ class MessageBase:
 
     @classmethod
     def deserialize(cls, data):
-        raw_message_type = data.get('type')
+        raw_message_type = data.get("type")
         if raw_message_type is None:
             return
         message_type = MessageType(raw_message_type)
         message_cls = message_cls_map.get(message_type)
-        message_data = data.get('data')
-        request_id = data.get('request_id')
-        interval = data.get('interval')
-        client_id = data.get('client_id')
-        if message_data is not None and isinstance(message_data, (int, float, dict)):
+        message_data = data.get("data")
+        request_id = data.get("request_id")
+        interval = data.get("interval")
+        client_id = data.get("client_id")
+        if message_data is not None and isinstance(
+            message_data, (int, float, dict)
+        ):
             return message_cls(message_data, interval, client_id)
         if message_data is not None and len(message_data) != 0:
             return message_cls(message_data, request_id, interval)
@@ -42,10 +44,7 @@ class MessageBase:
         return str(self.as_json())
 
     def as_json(self):
-        json_data = {
-            'type': self.type.value,
-            'payload': self.__dict__
-        }
+        json_data = {"type": self.type.value, "payload": self.__dict__}
         return json.dumps(json_data)
 
 
@@ -57,7 +56,7 @@ class Welcome(MessageBase):
     type: MessageType = MessageType.WELCOME
 
     def __init__(self):
-        self.welcome = 'WELCOME'
+        self.welcome = "WELCOME"
 
 
 class Subscribe(MessageBase):
@@ -101,8 +100,13 @@ class WorkTime(MessageBase):
 class Event(MessageBase):
     type: MessageType = MessageType.EVENT
 
-    def __init__(self, cpu: float = None, mem: dict = None,
-                 storage: dict = None, request_id: int = None):
+    def __init__(
+        self,
+        cpu: float = None,
+        mem: dict = None,
+        storage: dict = None,
+        request_id: int = None,
+    ):
         self.request = request_id
         self.cpu = cpu
         self.mem = mem
@@ -129,17 +133,18 @@ class Error(MessageBase):
     type: MessageType = MessageType.ERROR
 
     ERROR_DATA_TYPE = {
-        "type": "ERROR", "reason": "Data type incorrect, please use json"
+        "type": "ERROR",
+        "reason": "Data type incorrect, please use json",
     }
     ERROR_REQUEST_ID_COLLISION = {
-        "type": "ERROR", "reason": "request id collision"
+        "type": "ERROR",
+        "reason": "request id collision",
     }
     ERROR_USERNAME_PASSWORD_INCORRECT = {
-        "type": "ERROR", "reason": "incorrect username or password"
+        "type": "ERROR",
+        "reason": "incorrect username or password",
     }
-    ERROR_DATA_SIZE = {
-        "type": "ERROR", "reason": "incorrect data size"
-    }
+    ERROR_DATA_SIZE = {"type": "ERROR", "reason": "incorrect data size"}
 
 
 message_cls_map = {
@@ -154,5 +159,4 @@ message_cls_map = {
     MessageType.WORK_TIME: WorkTime,
     MessageType.CLIENT_DATA: ClientData,
     MessageType.DATA_RETURN: DataReturn,
-
 }

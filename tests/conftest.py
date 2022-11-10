@@ -12,7 +12,7 @@ from client_data import WSRequestsForServerMonitoring as ws_request
 config = Settings()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def start_server_for_tests(api_client):
     config.config_for_tests()
     server_run()
@@ -20,7 +20,7 @@ def start_server_for_tests(api_client):
     while True:
         time.sleep(timeout)
         try:
-            api_client.get('/api')
+            api_client.get("/api")
         except requests.exceptions.ConnectionError:
             timeout += 0.01
             if timeout > 0.2:
@@ -32,7 +32,7 @@ def start_server_for_tests(api_client):
     terminate_server()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def ws_api(hello: bool = True):
     ws = WebSocketTestApi("localhost", 5000, "/echo")
     if hello is True:
@@ -40,17 +40,23 @@ def ws_api(hello: bool = True):
     yield ws
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def api_client():
-    httpapi = BaseHttpApi('localhost', 5000)
+    httpapi = BaseHttpApi("localhost", 5000)
     yield httpapi
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def psql():
     from db import PostgresClient
-    conn = PostgresClient(dbname=config.db_name, user=config.db_username,
-                           password=config.db_password, host=config.db_host, port=config.db_port)
+
+    conn = PostgresClient(
+        dbname=config.db_name,
+        user=config.db_username,
+        password=config.db_password,
+        host=config.db_host,
+        port=config.db_port,
+    )
     try:
         yield conn
     finally:

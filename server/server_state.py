@@ -11,16 +11,17 @@ path = os.path.dirname(__file__)
 
 
 def service_time(start_time: int) -> str:
-    return str(WorkTime(start_time, time.strftime('%d %b %Y %H:%M:%S')))
+    return str(WorkTime(start_time, time.strftime("%d %b %Y %H:%M:%S")))
 
 
 def write_server_system_load():
-    with open(f'{path}/server_system_load.csv', 'a', encoding='utf-8') as csv:
-        csv.write('time;cpu load;memory load;storage\n')
+    with open(f"{path}/server_system_load.csv", "a", encoding="utf-8") as csv:
+        csv.write("time;cpu load;memory load;storage\n")
         while True:
             csv.write(
                 f'{time.strftime("%d %b %H:%M:%S")};'
-                f'{cpu_load(1)};'
+                f"{cpu_load(1)};"
                 f'{memory_info(DataType.MEGABYTE)["used"]};'
-                f'{storage_info(DataType.MEGABYTE)["used"]}\n')
+                f'{storage_info(DataType.MEGABYTE)["used"]}\n'
+            )
             csv.flush()
