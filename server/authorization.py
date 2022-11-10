@@ -1,6 +1,6 @@
 import base64
 
-from db import Psql
+from storage.db import Psql
 
 
 class Authorization:

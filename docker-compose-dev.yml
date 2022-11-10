@@ -3,13 +3,13 @@ services:
  database:
   image: "postgres:latest"
   ports:
-  - "5431:5432"
+  - "5432:5432"
   environment:
    POSTGRES_USER: test
    POSTGRES_PASSWORD: 123
    POSTGRES_DB: test_clients
   volumes:
-   - ./db.sql:/docker-entrypoint-initdb.d/db.sql
+   - ./server/storage/db.sql:/docker-entrypoint-initdb.d/db.sql
  server:
   build: .
   ports:
@@ -17,3 +17,5 @@ services:
   depends_on:
   - database
   entrypoint: ["/flask_system_monitor/tests/sh_for_tests.sh"]
+  env_file:
+    - server/config/.dev.env

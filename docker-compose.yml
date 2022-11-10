@@ -3,16 +3,18 @@ services:
  database:
   image: "postgres:latest"
   ports:
-  - "5431:5432"
+  - "5432:5432"
   environment:
    POSTGRES_USER: wood
    POSTGRES_PASSWORD: 123
    POSTGRES_DB: clients
   volumes:
-   - ./db.sql:/docker-entrypoint-initdb.d/db.sql
+   - ./server/storage/db.sql:/docker-entrypoint-initdb.d/db.sql
  server:
   build: .
   ports:
   - "5000:5000"
   depends_on:
   - database
+  env_file:
+    - server/config/.dev.env

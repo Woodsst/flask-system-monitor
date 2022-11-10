@@ -1,5 +1,0 @@
-db_host: database
-db_name: clients
-db_password: '123'
-db_port: 5432
-db_username: wood

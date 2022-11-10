@@ -14,7 +14,6 @@ config = Settings()
 
 @pytest.fixture(scope="session")
 def start_server_for_tests(api_client):
-    config.config_for_tests()
     server_run()
     timeout = 0.01
     while True:
@@ -28,7 +27,6 @@ def start_server_for_tests(api_client):
             continue
         break
     yield
-    config.reset_default_config()
     terminate_server()
 
 
@@ -51,11 +49,11 @@ def psql():
     from db import PostgresClient
 
     conn = PostgresClient(
-        dbname=config.db_name,
-        user=config.db_username,
-        password=config.db_password,
-        host=config.db_host,
-        port=config.db_port,
+        dbname=config.storage.name,
+        user=config.storage.username,
+        password=config.storage.password,
+        host=config.storage.host,
+        port=config.storage.port,
     )
     try:
         yield conn

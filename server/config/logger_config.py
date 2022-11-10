@@ -1,3 +1,4 @@
+import logging
 from logging import config
 
 
@@ -29,3 +30,7 @@ def logger_config():
     }
 
     config.dictConfig(log_config)
+
+
+logger_config()
+logger = logging.getLogger(__name__)

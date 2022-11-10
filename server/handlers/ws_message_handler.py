@@ -1,6 +1,5 @@
 import enum
 import json
-import logging
 import threading
 import time
 import typing
@@ -10,8 +9,7 @@ from monitoring_utilities import storage_monitor, cpu_monitor, memory_monitor
 from monitoring_utilities.datatype import DataType
 from handlers.data_handler import ClientDataHandler
 from authorization import Authorization
-
-logger = logging.getLogger(__file__)
+from config.logger_config import logger
 
 
 class ClientStatus(enum.Enum):

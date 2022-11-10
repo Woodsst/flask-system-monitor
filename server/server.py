@@ -1,4 +1,3 @@
-import logging
 import threading
 import time
 from typing import Union
@@ -13,7 +12,7 @@ from monitoring_utilities.cpu_monitor import (
     cpu_frequencies,
 )
 from monitoring_utilities.datatype import DataType
-from logger_config import logger_config
+from config.logger_config import logger
 from monitoring_utilities.memory_monitor import memory_info
 from handlers.request_handler import RequestHandler
 from handlers.ws_message_handler import WebSocketMessageHandler
@@ -23,8 +22,6 @@ from server_state import write_server_system_load, service_time
 
 app = Flask(__name__)
 sockets = Sockets(app)
-
-logger = logging.getLogger(__file__)
 
 
 @app.route("/")
@@ -142,7 +139,7 @@ def storage_total() -> Response or dict:
 @app.route("/start_time")
 def start_time() -> Response or dict:
     """Route ro return the server work time"""
-
+    server_start = time.strftime("%a, %d %b %Y %H:%M:%S")
     return service_time(server_start)
 
 
@@ -216,22 +213,19 @@ def split_client_log(username: str) -> Response:
 
 
 if __name__ == "__main__":
-    logger_config()
-    from config import Settings
-    from db import Psql
+    from config.settings import settings
+    from storage.db import Psql
 
-    config = Settings()
     db = Psql(
-        password=config.db_password,
-        host=config.db_host,
-        port=config.db_port,
-        db_name=config.db_name,
-        username=config.db_username,
+        password=settings.storage.password,
+        host=settings.storage.host,
+        port=settings.storage.port,
+        db_name=settings.storage.name,
+        username=settings.storage.username,
     )
     auth = Authorization(db)
     data_handler = ClientDataHandler(db)
     request_handler = RequestHandler(db)
-    server_start = time.strftime("%a, %d %b %Y %H:%M:%S")
     thread_cpu_info = threading.Thread(
         target=write_server_system_load, daemon=True
     )
@@ -239,8 +233,13 @@ if __name__ == "__main__":
     from gevent import pywsgi
     from geventwebsocket.handler import WebSocketHandler
 
-    server = pywsgi.WSGIServer(("", 5000), app, handler_class=WebSocketHandler)
+    server = pywsgi.WSGIServer(
+        (settings.app.host, settings.app.port),
+        app,
+        handler_class=WebSocketHandler
+    )
     sockets.url_map.add(Rule("/echo", endpoint=echo_socket, websocket=True))
+    logger.info("app run")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

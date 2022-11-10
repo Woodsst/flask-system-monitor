@@ -1,6 +1,6 @@
 from typing import List
 
-from db import Psql
+from storage.db import Psql
 
 
 class RequestHandler:

@@ -1,12 +1,10 @@
 import datetime
-import logging
 import time
 from typing import List
 
 import psycopg
 from psycopg import sql
-
-logger = logging.getLogger(__file__)
+from config.logger_config import logger
 
 
 class Psql:
@@ -32,7 +30,7 @@ class Psql:
                 )
             except psycopg.OperationalError:
                 timeout += 0.1
-                logger.info("trying connection with database")
+                logger.warning("trying connection with database")
                 if timeout > 0.5:
                     raise psycopg.OperationalError(
                         "connection with database failed"
