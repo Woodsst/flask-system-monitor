@@ -18,4 +18,4 @@ services:
   - database
   entrypoint: ["/flask_system_monitor/tests/sh_for_tests.sh"]
   env_file:
-    - server/config/.dev.env
+    - tests/.test.env

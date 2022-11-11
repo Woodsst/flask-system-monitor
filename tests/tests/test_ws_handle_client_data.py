@@ -1,5 +1,7 @@
-from client_data import WSRequstsForClientSystemMonitoring as client_request
-from client import WebSocketResponse as server_response
+from ..data_for_tests.client_data import (
+    WSRequstsForClientSystemMonitoring as client_request,
+)
+from ..data_for_tests.client import WebSocketResponse as server_response
 
 
 def test_get_client_data(ws_api):

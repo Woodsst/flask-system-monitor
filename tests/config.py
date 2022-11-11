@@ -19,6 +19,7 @@ class App(BaseSettings):
 
     host: str = Field("localhost")
     port: int = Field(5000)
+    ws: str = "/echo"
 
     class Config:
         env_prefix = "APP_"

@@ -1,8 +1,5 @@
 import psycopg
 from psycopg import sql
-from config import Settings
-
-config = Settings()
 
 
 class PostgresClient:

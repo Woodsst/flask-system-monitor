@@ -3,11 +3,14 @@ import time
 import pytest
 import requests as requests
 
-from client import WebSocketTestApi, BaseHttpApi
-from client_data import user
-from server_command import terminate_server, server_run
-from config import Settings
-from client_data import WSRequestsForServerMonitoring as ws_request
+from tests.data_for_tests.client import WebSocketTestApi, BaseHttpApi
+from tests.data_for_tests.client_data import user
+from .server_command import terminate_server, server_run
+from .config import Settings
+from tests.data_for_tests.client_data import (
+    WSRequestsForServerMonitoring as ws_request,
+)
+from .db import PostgresClient
 
 config = Settings()
 
@@ -32,7 +35,9 @@ def start_server_for_tests(api_client):
 
 @pytest.fixture(scope="session")
 def ws_api(hello: bool = True):
-    ws = WebSocketTestApi("localhost", 5000, "/echo")
+    ws = WebSocketTestApi(config.app.host,
+                          config.app.port,
+                          config.app.ws)
     if hello is True:
         ws.get(ws_request.HELLO)
     yield ws
@@ -40,14 +45,13 @@ def ws_api(hello: bool = True):
 
 @pytest.fixture(scope="session")
 def api_client():
-    httpapi = BaseHttpApi("localhost", 5000)
+    httpapi = BaseHttpApi(config.app.host,
+                          config.app.port,)
     yield httpapi
 
 
 @pytest.fixture(scope="session")
 def psql():
-    from db import PostgresClient
-
     conn = PostgresClient(
         dbname=config.storage.name,
         user=config.storage.username,

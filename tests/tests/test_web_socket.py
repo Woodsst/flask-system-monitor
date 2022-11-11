@@ -1,7 +1,9 @@
 import json
 
-from client import WebSocketResponse as ws_respose
-from client_data import WSRequestsForServerMonitoring as ws_request
+from ..data_for_tests.client import WebSocketResponse as ws_respose
+from ..data_for_tests.client_data import (
+    WSRequestsForServerMonitoring as ws_request,
+)
 
 
 def test_hello(ws_api):
@@ -87,7 +89,7 @@ def test_json_decode_error(ws_api):
 
 
 def test_data_type_error_in_handle():
-    from client import WebSocketTestApi
+    from ..data_for_tests.client import WebSocketTestApi
 
     ws_api = WebSocketTestApi("localhost", 5000, "/echo")
     ws_api.get(ws_request.WELCOME)

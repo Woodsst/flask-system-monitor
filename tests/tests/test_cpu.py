@@ -1,5 +1,5 @@
 def test_cpu_load_200(api_client):
-    response = api_client.get("/monitor/cpu/load")
+    response = api_client.get("/api/monitor/cpu/load")
     assert response.status_code == 200, f"{response.status_code}"
     response_json = response.json()
     assert "load" in response_json
@@ -10,12 +10,12 @@ def test_cpu_load_200(api_client):
 
 
 def test_cpu_load_405(api_client):
-    response = api_client.post("/monitor/cpu/load")
+    response = api_client.post("/api/monitor/cpu/load")
     assert response.status_code == 405, f"{response.status_code}"
 
 
 def test_cpu_core_info_200(api_client):
-    response = api_client.get("/monitor/cpu/info")
+    response = api_client.get("/api/monitor/cpu/info")
     assert response.status_code == 200, f"{response.status_code}"
     response_json = response.json()
     assert "cores frequency" in response_json
@@ -28,5 +28,5 @@ def test_cpu_core_info_200(api_client):
 
 
 def test_cpu_core_info_405(api_client):
-    response = api_client.post("/monitor/cpu/info")
+    response = api_client.post("/api/monitor/cpu/info")
     assert response.status_code == 405, f"{response.status_code}"

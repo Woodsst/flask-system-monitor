@@ -1,4 +1,4 @@
-from client_data import user, password, header
+from ..data_for_tests.client_data import user, password, header
 
 
 def test_split_log(api_client):

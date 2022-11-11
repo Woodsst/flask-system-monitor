@@ -1,12 +1,12 @@
-from datatype import DataType
+from ..data_for_tests.datatype import DataType
 
 
 def test_storage_info_200(api_client):
-    response = api_client.get("/monitor/storage/info")
+    response = api_client.get("/api/monitor/storage/info")
     assert response.status_code == 200, f"{response.status_code}"
     for units in DataType:
         response_for_units = api_client.get(
-            f"/monitor/storage/info?{units.value}"
+            f"/api/monitor/storage/info?{units.value}"
         )
         response_for_units_json = response_for_units.json()
         assert len(response_for_units_json) == 5
@@ -15,26 +15,26 @@ def test_storage_info_200(api_client):
 
 
 def test_storage_info_405(api_client):
-    response = api_client.post("/monitor/storage/info")
+    response = api_client.post("/api/monitor/storage/info")
     assert response.status_code == 405, f"{response.status_code}"
     for units in DataType:
         response_for_units = api_client.post(
-            f"/monitor/storage/info?{units.value}"
+            f"/api/monitor/storage/info?{units.value}"
         )
         assert response_for_units.status_code == 405
 
 
 def test_storage_info_400(api_client):
-    response = api_client.get("/monitor/storage/info?units=bad_units")
+    response = api_client.get("/api/monitor/storage/info?units=bad_units")
     assert response.status_code == 400
 
 
 def test_storage_total_200(api_client):
-    response = api_client.get("/monitor/storage/total")
+    response = api_client.get("/api/monitor/storage/total")
     assert response.status_code == 200, f"{response.status_code}"
     for units in DataType:
         response_for_units = api_client.get(
-            f"/monitor/storage/total?{units.value}"
+            f"/api/monitor/storage/total?{units.value}"
         )
         response_for_units_json = response_for_units.json()
         assert len(response_for_units_json) == 3
@@ -44,15 +44,15 @@ def test_storage_total_200(api_client):
 
 
 def test_storage_total_405(api_client):
-    response = api_client.post("/monitor/storage/total")
+    response = api_client.post("/api/monitor/storage/total")
     assert response.status_code == 405, f"{response.status_code}"
     for units in DataType:
         response_for_units = api_client.post(
-            f"/monitor/storage/total?{units.value}"
+            f"/api/monitor/storage/total?{units.value}"
         )
         assert response_for_units.status_code == 405
 
 
 def test_storage_total_400(api_client):
-    response = api_client.get("/monitor/storage/total?units=bad_units")
+    response = api_client.get("/api/monitor/storage/total?units=bad_units")
     assert response.status_code == 400

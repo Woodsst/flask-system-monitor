@@ -1,4 +1,4 @@
-from client_data import user, password, header, data
+from ..data_for_tests.client_data import user, password, header, data
 
 
 def test_client_data_request_202(api_client, psql):

@@ -1,6 +1,6 @@
 import base64
 
-from client_data import header, password, user, data_3, data_2
+from ..data_for_tests.client_data import header, password, user, data_3, data_2
 
 
 def test_client_log_time_work(api_client):
