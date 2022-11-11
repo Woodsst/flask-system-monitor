@@ -1,12 +1,9 @@
 import json
 
-from storage.db import Psql
+from handlers.BaseHandler import BaseHandler
 
 
-class ClientDataHandler:
-    def __init__(self, database: Psql):
-        self.db = database
-
+class ClientDataHandler(BaseHandler):
     def write_client_data(self, data: dict, username: str):
         cpu = data.get("cpu_load")
         mem = data.get("mem")

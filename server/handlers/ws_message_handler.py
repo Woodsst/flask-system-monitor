@@ -8,7 +8,7 @@ from handlers import protocol
 from monitoring_utilities import storage_monitor, cpu_monitor, memory_monitor
 from monitoring_utilities.datatype import DataType
 from handlers.data_handler import ClientDataHandler
-from authorization import Authorization
+from service.authorization import Authorization
 from config.logger_config import logger
 
 

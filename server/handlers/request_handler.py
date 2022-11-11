@@ -1,12 +1,9 @@
 from typing import List
 
-from storage.db import Psql
+from handlers.BaseHandler import BaseHandler
 
 
-class RequestHandler:
-    def __init__(self, database: Psql) -> None:
-        self.db = database
-
+class RequestHandler(BaseHandler):
     def client_log_request(self, username, start: int, end: int) -> dict:
         if (start and end) > 0:
             raw_payload = self.db.client_log_request(username, start, end)

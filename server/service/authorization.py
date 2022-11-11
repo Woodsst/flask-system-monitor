@@ -1,12 +1,9 @@
 import base64
 
-from storage.db import Psql
+from handlers.BaseHandler import BaseHandler
 
 
-class Authorization:
-    def __init__(self, database: Psql) -> None:
-        self.db = database
-
+class Authorization(BaseHandler):
     def authorization(self, username: str, password: str) -> bool or int:
         uniq_id = self.uniq_id(username, password)
         client_id = self.db.authorization_by_uniq_id(uniq_id)
