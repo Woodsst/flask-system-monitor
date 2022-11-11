@@ -16,6 +16,9 @@ Clients information storage in PostgreSQL.
 * psycopg
 * psycopg-binary
 * pyYAML
+* pydantic
+* flake8
+* black
 * all requariments in server/requariments.txt
 
 ## PostgreSQL

@@ -12,7 +12,8 @@ class Authorization(BaseHandler):
             return client_id
         return False
 
-    def uniq_id(self, username: str, password: str) -> str:
+    @staticmethod
+    def uniq_id(username: str, password: str) -> str:
         uniq_id = base64.b64encode(f"{username}:{password}".encode())
         uniq_id = uniq_id.decode()
         return uniq_id
